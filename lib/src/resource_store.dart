@@ -27,19 +27,19 @@ class ResourceStore {
     return http.get(url).then(parse);
   }
 
-  Future save(Resource resource) {
+  Future<Resource> save(Resource resource) {
     final content = _docFormat.resourceToDocument(resource);
     final url = _url(resource.type, resource.id);
     return http.put(url, content).then(_parse(resource.type));
   }
 
-  Future create(Resource resource) {
+  Future<Resource> create(Resource resource) {
     final content = _docFormat.resourceToDocument(resource);
     final url = _url(resource.type);
     return http.post(url, content).then(_parse(resource.type));
   }
 
-  Future delete(Resource resource) {
+  Future<Resource> delete(Resource resource) {
     final url = _url(resource.type, resource.id);
     return http.delete(url).then(_parse(resource.type));
   }
