@@ -43,47 +43,64 @@ Resource has a type, an id, and content.
 
 The `one` function, which takes a resource type and an id, loads a resource.
 
-    Future<Resource> r = store.one("posts", 123) // GET "/posts/123"
+```dart
+Future<Resource> r = store.one("posts", 123) // GET "/posts/123"
+```
 
 The `list` function, which takes a resource type, loads all the resources of the given type.
 
-    Future<List<Resource>> rs = store.list("posts"); // GET "/posts"
+```dart
+Future<List<Resource>> rs = store.list("posts"); // GET "/posts"
+```
 
 The `scope` function, which takes a resource, allows fetching nested resources.
 
-    final post = resource("posts", 123);
-    Future<Resource> r = store.scope(post).one("comments", 456); // GET "/posts/123/comments/456"
-    Future<List<Resource>> rs = store.scope(post).list("comments"); // GET "/posts/123/comments"
+```dart
+final post = resource("posts", 123);
+Future<Resource> r = store.scope(post).one("comments", 456); // GET "/posts/123/comments/456"
+Future<List<Resource>> rs = store.scope(post).list("comments"); // GET "/posts/123/comments"
+```
 
 `scope` returns a new store:
 
-    ResourceStore scopeStore = store.scope(post);
+```dart
+ResourceStore scopeStore = store.scope(post);
+```
 
 You can scope multiple times:
 
-    store.scope(blog).scope(post);
+```dart
+store.scope(blog).scope(post);
+```
 
 To create a resource you the `create` function:
 
-    final post = resource("posts", null, {"title": "New"}); // POST "/posts"
-    store.create(post);
+```dart
+final post = resource("posts", null, {"title": "New"}); // POST "/posts"
+store.create(post);
+```
 
 Use `update` to change the existing resource:
 
-    final post = resource("posts", 123, {"id": 123, "title": "New"}); // PUT "/posts/123"
-    store.save(post);
+```dart
+final post = resource("posts", 123, {"id": 123, "title": "New"}); // PUT "/posts/123"
+store.save(post);
+```
 
 Use `delete` to delete the existing resource:
 
-    final post = resource("posts", 123, {"id": 123, "title": "New"}); // DELETE "/posts/123"
-    store.delete(post);
+```dart
+final post = resource("posts", 123, {"id": 123, "title": "New"}); // DELETE "/posts/123"
+store.delete(post);
+```
 
 Use `scope to create, update, and delete nested resources.
 
 All the functions always return a new resource. For instance:
 
-    Future<Resource> createdPost = store.create(post);
-
+```dart
+Future<Resource> createdPost = store.create(post);
+```
 
 
 
@@ -93,24 +110,32 @@ All the functions always return a new resource. For instance:
 
 ### Setting Up Route
 
-    config.set({"posts" : {"route" : "custom"}});
+```dart
+config.set({"posts" : {"route" : "custom"}});
+```
 
 `ResourceStore` will use "custom" to build the url when fetching/saving posts. For instance:
 
-    store.one("posts", 123) // GET "/custom/123"
+```dart
+store.one("posts", 123) // GET "/custom/123"
+```
 
 ### Setting Up UrlRewriter
 
-    config.urlRewriter.baseUrl = "/base";
-    config.urlRewriter.suffix = ".json";
+```dart
+config.urlRewriter.baseUrl = "/base";
+config.urlRewriter.suffix = ".json";
 
-    store.one("posts", 123); // GET "/base/posts/123.json"
+store.one("posts", 123); // GET "/base/posts/123.json"
+```
 
 Or even like this:
 
-    config.urlRewriter = (url) => "$url.custom";
+```dart
+config.urlRewriter = (url) => "$url.custom";
 
-    store.one("posts", 123); // GET "/posts/123.custom"
+store.one("posts", 123); // GET "/posts/123.custom"
+```
 
 ### DocumentFormat
 
@@ -134,96 +159,114 @@ Please, see `integration_test.dart` for more details.
 
 Suppose we have these classed defined:
 
-  	 class Post {
-	     int id;
-	     String title;
-	   }
+```dart
+class Post {
+  int id;
+  String title;
+}
 
-	   class Comment {
-	     int id;
-	     String text;
-	   }
+class Comment {
+  int id;
+  String text;
+}
+```
 
 We want to be able to work with `Post`s and `Comment`s, not with `Map`s.  To do that we need to configure our store:
 
-    config.set({
-        "posts" : {
-            "type" : Post,
-            "deserializer" : deserializePost,
-            "serializer" : serializePost
-        },
-        "comments" : {
-            "type": Comment,
-            "deserializer" : deserializeComment,
-            "serializer" : serializeComment
-        }
-    });
+```dart
+config.set({
+    "posts" : {
+        "type" : Post,
+        "deserializer" : deserializePost,
+        "serializer" : serializePost
+    },
+    "comments" : {
+        "type": Comment,
+        "deserializer" : deserializeComment,
+        "serializer" : serializeComment
+    }
+});
+```
 
 Where the serialization and deserialization functions are responsible for converting domain objects from/into resources.
 
-    Post deserializePost(Resource r) => new Post()
-      ..id = r.id
-      ..title = r.content["title"];
+```dart
+Post deserializePost(Resource r) => new Post()
+  ..id = r.id
+  ..title = r.content["title"];
 
-    Resource serializePost(Post post) =>
-        res("posts", post.id, {"id" : post.id, "title" : post.title});
+Resource serializePost(Post post) =>
+    res("posts", post.id, {"id" : post.id, "title" : post.title});
 
-    Comment deserializeComment(Resource r) => new Comment()
-      ..id = r.id
-      ..text = r.content["text"];
+Comment deserializeComment(Resource r) => new Comment()
+  ..id = r.id
+  ..text = r.content["text"];
 
-    Resource serializeComment(Comment comment) =>
-        res("comments", comment.id, {"id" : comment.id, "text" : comment.text});
+Resource serializeComment(Comment comment) =>
+    res("comments", comment.id, {"id" : comment.id, "text" : comment.text});
+```
 
 You don't have to define all these functions by hand. Any framework converting maps into objects and visa versa can be used here.
 
 Now, having this configuration we can start loading and saving plain old Dart objects.
 
-    Future<Post> p = store.one(Post, 123);
-    Future<List<Post>> ps = store.all(Post);
-    Future<Comment> c = store.scope(post).one(Comment, 123);
-    Future<List<Comment>> cs = store.scope(post).all(Comment);
+```dart
+Future<Post> p = store.one(Post, 123);
+Future<List<Post>> ps = store.all(Post);
+Future<Comment> c = store.scope(post).one(Comment, 123);
+Future<List<Comment>> cs = store.scope(post).all(Comment);
+```
 
 As you can see it is very similar to `ResourceStore`, but we can use our domain objects instead of `Resource`.
 
 Similar to `ResourceStore` `create`, `save`, `delete` return a new object. For example:
 
-    final post = new Post()..id=123..title="title";
-    Future<Post> p = store.update(post); // PUT '/posts/123'
+```dart
+final post = new Post()..id=123..title="title";
+Future<Post> p = store.update(post); // PUT '/posts/123'
+```
 
 Let's say the backend returns the updated post object, for instance, serialized like this `{"id":123,"title":"New"}`.
 
-    final post = new Post()..id=123..title="title";
-    store.update(post).then((updatedPost) {
-      expect(updatedPost.title).toEqual("New");
-      expect(post.title).toEqual("title");
-    });
+```dart
+final post = new Post()..id=123..title="title";
+store.update(post).then((updatedPost) {
+  expect(updatedPost.title).toEqual("New");
+  expect(post.title).toEqual("title");
+});
+```
 
 `post` was not updated, and instead a new post object was created. This is great cause it allows you to keep you objects immutable. Sometimes, however, we would like to treat our objects as entities and update them instead. To do that, we need configure our store differently:
 
-    config.set({
-        "posts" : {
-          "type" : Post,
-          "serializer" : serializePost,
-          "updater" : updatePost
-        }
-    });
+```dart
+config.set({
+    "posts" : {
+      "type" : Post,
+      "serializer" : serializePost,
+      "updater" : updatePost
+    }
+});
+```
 
 Where `updatePost`:
 
-    updatePost(Post post, Resource r) {
-      post.title = r.content["title"];
-      return post;
-    }
+```dart
+updatePost(Post post, Resource r) {
+  post.title = r.content["title"];
+  return post;
+}
+```
 
 In this case:
 
-    final post = new Post()..id=123..title="title";
-    store.update(post).then((updatedPost) {
-      expect(updatedPost.title).toEqual("New");
-      expect(post.title).toEqual("New");
-      expect(post).toBe(updatedPost);
-    });
+```dart
+final post = new Post()..id=123..title="title";
+store.update(post).then((updatedPost) {
+  expect(updatedPost.title).toEqual("New");
+  expect(post.title).toEqual("New");
+  expect(post).toBe(updatedPost);
+});
+```
 
 
 
@@ -237,8 +280,10 @@ In my opinion making users inherit from some class is against the Angular spirit
 
 This means that:
 
-	post.save()
-	post.delete()
+```dart
+post.save()
+post.delete()
+```
 
 are not allowed.
 
