@@ -1,8 +1,15 @@
 {
-  "name": "retsclient",
+  "name": "hammock",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vsavkin/hammock.git"
+  },
   "devDependencies": {
     "karma" : "~0.12.0",
-    "karma-dart" : "~0.2.7",
-    "karma-chrome-launcher": "~0.1.3"
+    "karma-dart" : "~0.2.6",
+    "karma-chrome-launcher": "~0.1.3",
+    "karma-phantomjs-launcher": "~0.1.3",
+    "karma-junit-reporter": "~0.2.1",
+    "karma-jasmine" : "~0.1.5"
   }
 }

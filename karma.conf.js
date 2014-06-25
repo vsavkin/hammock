@@ -11,11 +11,12 @@ module.exports = function(config) {
 
     autoWatch: true,
     captureTimeout: 20000,
-    browserNoActivityTimeout: 300000,
+    browserNoActivityTimeout: 1500000,
 
     plugins: [
       'karma-dart',
-      'karma-chrome-launcher'
+      'karma-chrome-launcher',
+      'karma-phantomjs-launcher'
     ],
 
     browsers: ['Dartium']
