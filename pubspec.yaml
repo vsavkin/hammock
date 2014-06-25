@@ -1,0 +1,12 @@
+name: hammock
+version: 0.1.0
+author: Victor Savkin <vic.savkin@gmail.com>
+homepage: https://github.com/vsavkin/hammock
+description: AngularDart service for working with Rest APIs
+dependencies:
+  angular: '>=0.12.0 <1.0.0'
+dev_dependencies:
+  guinness: '>=0.1.10 <0.2.0'
+  mock: '>0.11.0 <1.0.0'
+environment:
+  sdk: ">=1.4.0 <2.0.0"
