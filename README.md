@@ -2,6 +2,8 @@
 
 AngularDart service for working with Rest APIs
 
+[![Build Status](https://travis-ci.org/vsavkin/hammock.svg?branch=master)](https://travis-ci.org/vsavkin/hammock)
+
 
 ## Main Abstractions
 
@@ -114,7 +116,7 @@ Or even like this:
 
 ### DocumentFormat
 
-`DocumentFormat` defines how resources are serialized into documents. SimpleDocumentFormat is used by default. It can overwritten as follows:
+`DocumentFormat` defines how resources are serialized into documents. SimpleDocumentFormat is used by default. It can be overwritten as follows:
 
     config.documentFormat = new CustomDocumentFormat();
 
