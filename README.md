@@ -93,9 +93,7 @@ All the functions always return a new resource. For instance:
 
 ### Setting Up Route
 
-   config.set({
-      "posts" : {"route" : "custom"}
-   });
+    config.set({"posts" : {"route" : "custom"}});
 
 `ResourceStore` will use "custom" to build the url when fetching/saving posts. For instance:
 
@@ -213,10 +211,10 @@ Let's say the backend returns the updated post object, for instance, serialized 
 
 Where `updatePost`:
 
-updatePost(Post post, Resource r) {
-  post.title = r.content["title"];
-  return post;
-}
+    updatePost(Post post, Resource r) {
+      post.title = r.content["title"];
+      return post;
+    }
 
 In this case:
 
@@ -226,4 +224,26 @@ In this case:
       expect(post.title).toEqual("New");
       expect(post).toBe(updatedPost);
     });
+
+
+
+## Design Principles
+
+### Plain old Dart objects. No active record.
+
+Angular is different from other client-side frameworks. It lets you use simple framework-agnostic objects for your components, controllers, formatters, etc.
+
+In my opinion making users inherit from some class is against the Angular spirit. This is especially true when talking about domain objects. They should not have to know anything about Angular or the backend. Any object, including a simple 'Map', should be possible to load and save, if you wish so.
+
+This means that:
+
+	post.save()
+	post.delete()
+
+are not allowed.
+
+### Convention over Configuration
+
+Everything should work with the minimum amount of configuration, but, if needed, be extensible. It should be possible to configure how data is serialized, deserialized, etc.
+
 
