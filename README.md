@@ -17,7 +17,7 @@ AngularDart service for working with Rest APIs
 
 To use Hammock you need to install it:
 
-  module.install(new Hammock());
+    module.install(new Hammock());
 
 After that the following services will become injectable:
 
@@ -134,15 +134,15 @@ Please, see `integration_test.dart` for more details.
 
 Suppose we have these classed defined:
 
-  	class Post {
-	    int id;
-	    String title;
-	  }
+  	 class Post {
+	     int id;
+	     String title;
+	   }
 
-	  class Comment {
-	    int id;
-	    String text;
-	  }
+	   class Comment {
+	     int id;
+	     String text;
+	   }
 
 We want to be able to work with `Post`s and `Comment`s, not with `Map`s.  To do that we need to configure our store:
 
