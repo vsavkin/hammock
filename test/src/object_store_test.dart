@@ -100,7 +100,7 @@ testObjectStore() {
 
           final post = new Post()..id = 123..title = "New";
 
-          wait(store.save(post));
+          wait(store.update(post));
         });
 
         it("deletes a object", (MockHttpBackend hb, ObjectStore store) {
@@ -117,7 +117,7 @@ testObjectStore() {
           final post = new Post()..id = 123;
           final comment = new Comment()..id = 456..text = "New";
 
-          wait(store.scope(post).save(comment));
+          wait(store.scope(post).update(comment));
         });
 
         it("handles errors", (MockHttpBackend hb, ObjectStore store) {
@@ -149,7 +149,7 @@ testObjectStore() {
 
           hb.expectPUT("/posts/123").respond({"id": 123, "title": "Newer"});
 
-          wait(store.save(post), (Post returnedPost) {
+          wait(store.update(post), (Post returnedPost) {
             expect(returnedPost.id).toEqual(123);
             expect(returnedPost.title).toEqual("Newer");
           });
@@ -170,7 +170,7 @@ testObjectStore() {
 
           hb.expectPUT("/posts/123").respond({"title": "Newer"});
 
-          wait(store.save(post), (Post returnedPost) {
+          wait(store.update(post), (Post returnedPost) {
             expect(returnedPost.title).toEqual("Newer");
             expect(post.title).toEqual("Newer");
           });
@@ -194,7 +194,7 @@ testObjectStore() {
 
           hb.expectPUT("/posts/123").respond(500, "BOOM");
 
-          waitForError(store.save(post), (resp) {
+          waitForError(store.update(post), (resp) {
             expect(resp).toEqual("BOOM");
           });
         });
