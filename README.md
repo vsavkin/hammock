@@ -98,10 +98,10 @@ store.delete(post); // DELETE "/posts/123"
 
 Use `scope` to create, update, and delete nested resources.
 
-All the methods always return a new resource. For instance:
+All the commands return a `CommandResponse`. For instance:
 
 ```dart
-Future<Resource> createdPost = store.create(post);
+Future<CommandResponse> createdPost = store.create(post);
 ```
 
 
@@ -165,6 +165,7 @@ Suppose we have these classed defined:
 class Post {
   int id;
   String title;
+  dynamic errors;
 }
 
 class Comment {
@@ -221,7 +222,7 @@ Future<List<Comment>> cs = store.scope(post).list(Comment);
 
 As you can see it is very similar to `ResourceStore`, but we can use our domain objects instead of `Resource`.
 
-Similar to `ResourceStore` `create`, `save`, `delete` return a new object. For example:
+With the current configuration `create`, `save`, `delete` return a new object. For example:
 
 ```dart
 final post = new Post()..id=123..title="title";
@@ -245,7 +246,10 @@ config.set({
     "posts" : {
       "type" : Post,
       "serializer" : serializePost,
-      "updater" : updatePost
+      "deserializer" : {
+        "query" : deserializePost,
+        "command" : updatePost
+      }
     }
 });
 ```
@@ -253,7 +257,7 @@ config.set({
 Where `updatePost`:
 
 ```dart
-updatePost(Post post, Resource r) {
+updatePost(Post post, CommandResponse r) {
   post.title = r.content["title"];
   return post;
 }
@@ -269,6 +273,42 @@ store.save(post).then((updatedPost) {
   expect(post).toBe(updatedPost);
 });
 ```
+
+Finally, let's configure our store to handle errors differently:
+
+```dart
+config.set({
+    "posts" : {
+      "type" : Post,
+      "serializer" : serializePost,
+      "deserializer" : {
+        "query" : deserializePost,
+        "command" : {
+          "success" : updatePost,
+          "error" : parseErrors
+        }
+      }
+    }
+});
+```
+
+Where `parseErrors`:
+
+```dart
+parseErrors(Post post, CommandResponse r) {
+  return r.content["errors"];
+}
+```
+
+Now, if the backend returns `{"errors" : ["Some Error"]}`.
+
+```dart
+final post = new Post()..id=123..title="title";
+store.save(post).catchError((errs) {
+  expect(errs).toEqual(["Some Error"]);
+});
+```
+
 
 
 

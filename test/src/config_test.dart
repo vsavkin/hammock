@@ -32,27 +32,20 @@ testConfig() {
       final c = new HammockConfig();
       c.set({"type" : {"deserializer" : "deserializer"}});
 
-      expect(c.deserializer("type")).toEqual("deserializer");
+      expect(c.deserializer("type", [])).toEqual("deserializer");
     });
 
-    it("throws when there is no deserializer", () {
+    it("returns a deserializer for a resource type (query)", () {
       final c = new HammockConfig();
+      c.set({"type" : {"deserializer" : {"query" : "deserializer"}}});
 
-      expect(() => c.deserializer("type")).toThrow();
+      expect(c.deserializer("type", ['query'])).toEqual("deserializer");
     });
 
-    it("returns an update for a resource type", () {
+    it("returns null when there is no deserializer", () {
       final c = new HammockConfig();
-      c.set({"type" : {"updater" : "updater"}});
 
-      expect(c.updater("type")).toEqual("updater");
-    });
-
-    it("returns a deserializer for a resource type when cannot find its updater", () {
-      final c = new HammockConfig();
-      c.set({"type" : {"deserializer" : (_) => _}});
-
-      expect(c.updater("type")("some obj", "resource")).toEqual("resource");
+      expect(c.deserializer("type", [])).toBeNull();
     });
 
     it("returns a resource type for an object type", () {

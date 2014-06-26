@@ -16,9 +16,10 @@ class ResourceStore {
 
   ResourceStore scope(scopingResource) => new ResourceStore.copy(this)..scopingResources.add(scopingResource);
 
+
   Future<Resource> one(resourceType, resourceId) {
     final url = _url(resourceType, resourceId);
-    return http.get(url).then(_parse(resourceType));
+    return http.get(url).then(_parseResource(resourceType));
   }
 
   Future<List<Resource>> list(resourceType) {
@@ -27,24 +28,31 @@ class ResourceStore {
     return http.get(url).then(parse);
   }
 
-  Future<Resource> save(Resource resource) {
-    final content = _docFormat.resourceToDocument(resource);
-    final url = _url(resource.type, resource.id);
-    return http.put(url, content).then(_parse(resource.type));
-  }
 
-  Future<Resource> create(Resource resource) {
+  Future<CommandResponse> create(Resource resource) {
     final content = _docFormat.resourceToDocument(resource);
     final url = _url(resource.type);
-    return http.post(url, content).then(_parse(resource.type));
+    final p = _parseCommandResponse(resource);
+    return http.post(url, content).then(p, onError: _error(p));
   }
 
-  Future<Resource> delete(Resource resource) {
+  Future<CommandResponse> save(Resource resource) {
+    final content = _docFormat.resourceToDocument(resource);
     final url = _url(resource.type, resource.id);
-    return http.delete(url).then(_parse(resource.type));
+    final p = _parseCommandResponse(resource);
+    return http.put(url, content).then(p, onError: _error(p));
   }
 
-  _parse(resourceType) => (resp) => _docFormat.documentToResource(resourceType, resp.data);
+  Future<CommandResponse> delete(Resource resource) {
+    final url = _url(resource.type, resource.id);
+    final p = _parseCommandResponse(resource);
+    return http.delete(url).then(p, onError: _error(p));
+  }
+
+
+  _parseResource(resourceType) => (resp) => _docFormat.documentToResource(resourceType, resp.data);
+  _parseCommandResponse(res) => (resp) => _docFormat.documentToCommandResponse(res, resp.data);
+  _error(Function func) => (resp) => new Future.error(func(resp));
 
   get _docFormat => config.documentFormat;
 
