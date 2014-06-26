@@ -24,3 +24,12 @@ wait(future, [callback]) {
 
   future.then(callback);
 }
+
+waitForError(future, [callback]) {
+  callback = callback != null ? callback : (_) {};
+
+  microLeap();
+  inject((MockHttpBackend http) => http.flush());
+
+  future.catchError(callback);
+}

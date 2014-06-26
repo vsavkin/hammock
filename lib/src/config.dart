@@ -3,7 +3,6 @@ part of hammock;
 class UrlRewriter implements Function {
   String baseUrl = "";
   String suffix = "";
-
   String call(String url) => "$baseUrl$url$suffix";
 }
 
@@ -19,32 +18,37 @@ class HammockConfig {
   }
 
   String route(resourceType) =>
-      _value(resourceType, 'route', () => resourceType);
+      _value([resourceType, 'route'], () => resourceType);
 
-  deserializer(resourceType) =>
-      _value(resourceType, 'deserializer', () => throw "No deserializer for `${resourceType}`");
+  deserializer(resourceType, [List path]) =>
+      _value([resourceType, 'deserializer']..addAll(path));
 
   serializer(resourceType) =>
-      _value(resourceType, 'serializer', () => throw "No serializer for `${resourceType}`");
-
-  updater(resourceType) =>
-      _value(resourceType, 'updater', () => _defaultUpdater(resourceType));
+      _value([resourceType, 'serializer'], () => throw "No serializer for `${resourceType}`");
 
   resourceType(objectType) =>
       config.keys.firstWhere(
-        (e) => _value(e, "type") == objectType,
+        (e) => _value([e, "type"]) == objectType,
         orElse: () => throw "No resource type found for $objectType");
 
-  _value(resourceType, key, [ifAbsent]) {
-    if (config.containsKey(resourceType) && config[resourceType].containsKey(key)) {
-      return config[resourceType][key];
-    } else if (ifAbsent != null) {
-      return ifAbsent();
-    } else {
-      return null;
+  _value(List path, [ifAbsent=_null]) {
+    path = path.where((_) => _ != null).toList();
+
+    var current = config;
+    for(var i = 0; i < path.length; ++i) {
+      if( current is! Map ) break;
+      if (current.containsKey(path[i])) {
+        current = current[path[i]];
+      } else {
+        current = null;
+      }
     }
+
+    return current == null ? ifAbsent() : current;
   }
 
   _defaultUpdater(resourceType) =>
       (object, resource) => deserializer(resourceType)(resource);
 }
+
+_null() => null;
