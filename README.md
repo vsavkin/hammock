@@ -5,6 +5,11 @@ AngularDart service for working with Rest APIs
 [![Build Status](https://travis-ci.org/vsavkin/hammock.svg?branch=master)](https://travis-ci.org/vsavkin/hammock)
 
 
+## Installation
+
+You can find the Hammock installation instructions [here](http://pub.dartlang.org/packages/hammock#installing).
+
+
 ## Main Abstractions
 
 * `Document` is what is sent over the wire, and it can include one or many resources. It is a String.
