@@ -58,7 +58,7 @@ testResourceStore() {
 
         final post = resource("posts", 123, {"id": 123, "title": "New"});
 
-        wait(store.save(post), (resp) {
+        wait(store.update(post), (resp) {
           expect(resp.content["id"]).toEqual(123);
           expect(resp.content["title"]).toEqual("Newer");
         });
@@ -70,7 +70,7 @@ testResourceStore() {
         final post = resource("posts", 123);
         final comment = resource("comments", 456, {"id": 456, "text" : "New"});
 
-        wait(store.scope(post).save(comment));
+        wait(store.scope(post).update(comment));
       });
 
       it("deletes a resource", (MockHttpBackend hb, ResourceStore store) {

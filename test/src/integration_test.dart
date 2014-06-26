@@ -27,7 +27,7 @@ testIntegration() {
       });
 
       hb.expectPUT("/posts/123", '{"posts":[{"id":123,"title":"new"}]}');
-      wait(s.save(resource("posts", 123, {"id" : 123, "title" : "new"})));
+      wait(s.update(resource("posts", 123, {"id" : 123, "title" : "new"})));
     });
   });
 
@@ -47,13 +47,13 @@ testIntegration() {
 
         hb.expectPUT("/posts/123").respond({"id" : 123, "title" : "updated"});
 
-        wait(s.save(post), (up) {
+        wait(s.update(post), (up) {
           expect(up.title).toEqual("updated");
         });
 
         hb.expectPUT("/posts/123").respond(422, {"id" : 123, "title" : "updated", "errors" : "some errors"}, {});
 
-        waitForError(s.save(post), (up, s) {
+        waitForError(s.update(post), (up, s) {
           expect(up.title).toEqual("updated");
           expect(up.errors).toEqual("some errors");
         });
@@ -78,13 +78,13 @@ testIntegration() {
 
         hb.expectPUT("/posts/123").respond("OK");
 
-        wait(s.save(post), (res) {
+        wait(s.update(post), (res) {
           expect(res).toBeTrue();
         });
 
         hb.expectPUT("/posts/123").respond(422, {"errors" : "some errors"}, {});
 
-        waitForError(s.save(post), (errors) {
+        waitForError(s.update(post), (errors) {
           expect(errors).toEqual("some errors");
         });
     });

@@ -82,11 +82,11 @@ final post = resource("posts", null, {"title": "New"});
 store.create(post); // POST "/posts"
 ```
 
-Use `save` to change the existing resource:
+Use `update` to change the existing resource:
 
 ```dart
 final post = resource("posts", 123, {"id": 123, "title": "New"}); 
-store.save(post); // PUT "/posts/123"
+store.update(post); // PUT "/posts/123"
 ```
 
 Use `delete` to delete the existing resource:
@@ -222,18 +222,18 @@ Future<List<Comment>> cs = store.scope(post).list(Comment);
 
 As you can see it is very similar to `ResourceStore`, but we can use our domain objects instead of `Resource`.
 
-With the current configuration `create`, `save`, `delete` return a new object. For example:
+With the current configuration `create`, `update`, `delete` return a new object. For example:
 
 ```dart
 final post = new Post()..id=123..title="title";
-Future<Post> p = store.save(post); // PUT '/posts/123'
+Future<Post> p = store.update(post); // PUT '/posts/123'
 ```
 
 Let's say the backend returns the updated post object, for instance, serialized like this `{"id":123,"title":"New"}`.
 
 ```dart
 final post = new Post()..id=123..title="title";
-store.save(post).then((updatedPost) {
+store.update(post).then((updatedPost) {
   expect(updatedPost.title).toEqual("New");
   expect(post.title).toEqual("title");
 });
@@ -267,7 +267,7 @@ In this case:
 
 ```dart
 final post = new Post()..id=123..title="title";
-store.save(post).then((updatedPost) {
+store.update(post).then((updatedPost) {
   expect(updatedPost.title).toEqual("New");
   expect(post.title).toEqual("New");
   expect(post).toBe(updatedPost);
@@ -304,7 +304,7 @@ Now, if the backend returns `{"errors" : ["Some Error"]}`.
 
 ```dart
 final post = new Post()..id=123..title="title";
-store.save(post).catchError((errs) {
+store.update(post).catchError((errs) {
   expect(errs).toEqual(["Some Error"]);
 });
 ```
@@ -323,7 +323,7 @@ In my opinion making users inherit from some class is against the Angular spirit
 This means that:
 
 ```dart
-post.save()
+post.update()
 post.delete()
 ```
 

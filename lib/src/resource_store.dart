@@ -36,7 +36,7 @@ class ResourceStore {
     return http.post(url, content).then(p, onError: _error(p));
   }
 
-  Future<CommandResponse> save(Resource resource) {
+  Future<CommandResponse> update(Resource resource) {
     final content = _docFormat.resourceToDocument(resource);
     final url = _url(resource.type, resource.id);
     final p = _parseCommandResponse(resource);

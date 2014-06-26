@@ -33,11 +33,11 @@ class ObjectStore {
     return resourceStore.create(res).then(p, onError: ep);
   }
 
-  Future save(object) {
+  Future update(object) {
     final res = _wrapInResource(object);
     final p = _parseSuccessCommandResponse(res, object);
     final ep = _parseErrorCommandResponse(res, object);
-    return resourceStore.save(res).then(p, onError: ep);
+    return resourceStore.update(res).then(p, onError: ep);
   }
 
   Future delete(object) {
