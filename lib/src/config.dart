@@ -1,6 +1,6 @@
 part of hammock;
 
-class UrlRewriter implements Function {
+class HammockUrlRewriter implements Function, UrlRewriter {
   String baseUrl = "";
   String suffix = "";
   String call(String url) => "$baseUrl$url$suffix";
@@ -10,7 +10,7 @@ class UrlRewriter implements Function {
 class HammockConfig {
   Map config = {};
   DocumentFormat documentFormat = new SimpleDocumentFormat();
-  dynamic urlRewriter = new UrlRewriter();
+  dynamic urlRewriter = new HammockUrlRewriter();
 
 
   void set(Map config){

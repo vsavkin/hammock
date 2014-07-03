@@ -19,34 +19,44 @@ class ObjectStore {
     return resourceStore.one(rt, id).then(deserialize);
   }
 
-  Future<List> list(type) {
+  Future<List> list(type, {Map params}) {
     final rt = config.resourceType(type);
     final deserialize = (list) => list.map(config.deserializer(rt, ['query'])).toList();
-    return resourceStore.list(rt).then(deserialize);
+    return resourceStore.list(rt, params: params).then(deserialize);
+  }
+
+  Future customQueryOne(type, CustomRequestParams params){
+    final rt = config.resourceType(type);
+    final deserialize = config.deserializer(rt, ['query']);
+    return resourceStore.customQueryOne(rt, params).then(deserialize);
+  }
+
+  Future<List> customQueryList(type, CustomRequestParams params){
+    final rt = config.resourceType(type);
+    final deserialize = (list) => list.map(config.deserializer(rt, ['query'])).toList();
+    return resourceStore.customQueryList(rt, params).then(deserialize);
   }
 
 
-  Future create(object) {
+  Future create(object) =>
+      _resourceStoreCommand(object, resourceStore.create);
+
+  Future update(object) =>
+      _resourceStoreCommand(object, resourceStore.update);
+
+  Future delete(object) =>
+      _resourceStoreCommand(object, resourceStore.delete);
+
+  Future customCommand(object, CustomRequestParams params) =>
+      _resourceStoreCommand(object, (res) => resourceStore.customCommand(res, params));
+
+
+  _resourceStoreCommand(object, function) {
     final res = _wrapInResource(object);
     final p = _parseSuccessCommandResponse(res, object);
     final ep = _parseErrorCommandResponse(res, object);
-    return resourceStore.create(res).then(p, onError: ep);
+    return function(res).then(p, onError: ep);
   }
-
-  Future update(object) {
-    final res = _wrapInResource(object);
-    final p = _parseSuccessCommandResponse(res, object);
-    final ep = _parseErrorCommandResponse(res, object);
-    return resourceStore.update(res).then(p, onError: ep);
-  }
-
-  Future delete(object) {
-    final res = _wrapInResource(object);
-    final p = _parseSuccessCommandResponse(res, object);
-    final ep = _parseErrorCommandResponse(res, object);
-    return resourceStore.delete(res).then(p, onError: ep);
-  }
-
 
   _wrapInResource(object) =>
       config.serializer(config.resourceType(object.runtimeType))(object);

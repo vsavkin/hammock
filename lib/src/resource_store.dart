@@ -22,11 +22,16 @@ class ResourceStore {
     return http.get(url).then(_parseResource(resourceType));
   }
 
-  Future<List<Resource>> list(resourceType) {
+  Future<List<Resource>> list(resourceType, {Map params}) {
     final url = _url(resourceType);
-    final parse = (resp) => _docFormat.documentToManyResources(resourceType, resp.data);
-    return http.get(url).then(parse);
+    return http.get(url, params: params).then(_parseManyResources((resourceType)));
   }
+
+  Future<Resource> customQueryOne(resourceType, CustomRequestParams params) =>
+      params.invoke(http).then(_parseResource(resourceType));
+
+  Future<List<Resource>> customQueryList(resourceType, CustomRequestParams params)  =>
+      params.invoke(http).then(_parseManyResources(resourceType));
 
 
   Future<CommandResponse> create(Resource resource) {
@@ -49,8 +54,14 @@ class ResourceStore {
     return http.delete(url).then(p, onError: _error(p));
   }
 
+  Future<CommandResponse> customCommand(resource, CustomRequestParams params) {
+    final p = _parseCommandResponse(resource);
+    return params.invoke(http).then(p, onError: _error(p));
+  }
+
 
   _parseResource(resourceType) => (resp) => _docFormat.documentToResource(resourceType, resp.data);
+  _parseManyResources(resourceType) => (resp) => _docFormat.documentToManyResources(resourceType, resp.data);
   _parseCommandResponse(res) => (resp) => _docFormat.documentToCommandResponse(res, resp.data);
   _error(Function func) => (resp) => new Future.error(func(resp));
 

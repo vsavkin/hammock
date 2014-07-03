@@ -5,12 +5,72 @@ AngularDart service for working with Rest APIs
 [![Build Status](https://travis-ci.org/vsavkin/hammock.svg?branch=master)](https://travis-ci.org/vsavkin/hammock)
 
 
+
 ## Installation
 
 You can find the Hammock installation instructions [here](http://pub.dartlang.org/packages/hammock#installing).
 
 
-## Main Abstractions
+
+## Quick Start Guide
+
+To use Hammock you need to install it:
+
+    module.install(new Hammock());
+
+
+Suppose we have this class defined:
+
+```dart
+class Post {
+  int id;
+  String title;
+}
+```
+
+We need to configure Hammock to work with this class:
+
+```dart
+config.set({
+    "posts" : {
+        "type" : Post,
+        "deserializer" : deserializePost,
+        "serializer" : serializePost
+    }
+});
+```
+
+Where the serialization and deserialization functions are responsible for converting domain objects from/into resources.
+
+```dart
+Post deserializePost(Resource r) => new Post()
+  ..id = r.id
+  ..title = r.content["title"];
+
+Resource serializePost(Post post) =>
+    resource("posts", post.id, {"id" : post.id, "title" : post.title});
+
+
+You don't have to define all these functions by hand. Any framework converting maps into objects and visa versa can be used here.
+
+Now, having this configuration we can start loading and saving plain old Dart objects.
+
+```dart
+Future<Post> p = store.one(Post, 123);
+Future<List<Post>> ps = store.list(Post);
+
+final post = new Post()..id=456..title="title";
+store.update(post); // PUT '/posts/456'
+```
+
+
+
+
+
+
+## Detailed Guide
+
+### Main Abstractions
 
 * `Document` is what is sent over the wire, and it can include one or many resources. It is a String.
 * `Resource` is an addressable entity. It has a type, an id, and content. The content field is a Map.
@@ -20,7 +80,7 @@ You can find the Hammock installation instructions [here](http://pub.dartlang.or
 
 
 
-## Using Hammock
+### Using Hammock
 
 To use Hammock you need to install it:
 
@@ -35,7 +95,7 @@ After that the following services will become injectable:
 
 
 
-## Using Resource
+### Using Resource
 
 You can create a resource like this:
 
@@ -46,7 +106,7 @@ Resource has a type, an id, and content.
 
 
 
-## Using ResourceStore
+### Using ResourceStore
 
 The `one` method, which takes a resource type and an id, loads a resource.
 
@@ -109,9 +169,24 @@ All the commands return a `CommandResponse`. For instance:
 Future<CommandResponse> createdPost = store.create(post);
 ```
 
+Use `customQueryOne` and `customQueryList` to make custom queries:
+
+``dart
+Future<Resource> r = store.customQueryOne("posts", new CustomRequestParams(method: "GET", url:"/posts/123"));
+Future<List<Resource>> rs = store.customQueryList("posts", new CustomRequestParams(method: "GET", url:"/posts"));
+``
+
+And `customCommand` to execute custom commands:
+
+``dart
+final post = resource("posts", 123);
+store.customCommand(post, new CustomRequestParams(method: 'DELETE', url: '/posts/123'));
+``
+
+Using custom queries and command is discouraged.
 
 
-## Configuring ResourceStore
+### Configuring ResourceStore
 
 `HammockConfig` allows you to configure some aspects of `ResourceStore`.
 
@@ -127,7 +202,7 @@ config.set({"posts" : {"route" : "custom"}});
 store.one("posts", 123) // GET "/custom/123"
 ```
 
-### Setting Up UrlRewriter
+#### Setting Up UrlRewriter
 
 ```dart
 config.urlRewriter.baseUrl = "/base";
@@ -144,7 +219,7 @@ config.urlRewriter = (url) => "$url.custom";
 store.one("posts", 123); // GET "/posts/123.custom"
 ```
 
-### DocumentFormat
+#### DocumentFormat
 
 `DocumentFormat` defines how resources are serialized into documents. SimpleDocumentFormat is used by default. It can be overwritten as follows:
 
@@ -153,9 +228,16 @@ store.one("posts", 123); // GET "/posts/123.custom"
 Please, see `integration_test.dart` for more details.
 
 
+#### Configuring the Http Service
 
+Hammock is built on top of the `Http` service provided by Angular. Consequently, you can configure Hammock by configuring `Http`.
 
-## Using ObjectStore
+```dart
+final headers = injector.get(HttpDefaultHeaders);
+headers.setHeaders({'Content-Type' : 'custom-type'}, 'GET');
+```
+
+### Using ObjectStore
 
 `ObjectStore` is responsible for:
 
@@ -204,14 +286,14 @@ Post deserializePost(Resource r) => new Post()
   ..title = r.content["title"];
 
 Resource serializePost(Post post) =>
-    res("posts", post.id, {"id" : post.id, "title" : post.title});
+    resource("posts", post.id, {"id" : post.id, "title" : post.title});
 
 Comment deserializeComment(Resource r) => new Comment()
   ..id = r.id
   ..text = r.content["text"];
 
 Resource serializeComment(Comment comment) =>
-    res("comments", comment.id, {"id" : comment.id, "text" : comment.text});
+    resource("comments", comment.id, {"id" : comment.id, "text" : comment.text});
 ```
 
 You don't have to define all these functions by hand. Any framework converting maps into objects and visa versa can be used here.
@@ -314,6 +396,9 @@ store.update(post).catchError((errs) {
 });
 ```
 
+#### Custom Queries and Commands
+
+Similar to `ResourceStore` `ObjectStore` supports custom queries and commands.
 
 
 
