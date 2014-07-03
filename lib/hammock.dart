@@ -10,6 +10,7 @@ part 'src/config.dart';
 part 'src/document_format.dart';
 part 'src/custom_request_params.dart';
 part 'src/object_store.dart';
+part 'src/utils.dart';
 
 class Hammock extends Module {
   Hammock() {
@@ -18,8 +19,3 @@ class Hammock extends Module {
     bind(ObjectStore);
   }
 }
-
-class _Undefined {
-  const _Undefined();
-}
-const _u = const _Undefined();

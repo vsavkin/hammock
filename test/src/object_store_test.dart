@@ -70,6 +70,29 @@ testObjectStore() {
         });
       });
 
+      it("supports deserializers that return Futures",
+          (HammockConfig config, MockHttpBackend hb, ObjectStore store) {
+
+        config.set({
+            "posts" : {
+              "type" : Post,
+              "deserializer" : (r) => new Future.value(deserializePost(r))
+            }
+        });
+
+        hb.whenGET("/posts/123").respond({"title" : "SampleTitle"});
+
+        wait(store.one(Post, 123), (Post post) {
+          expect(post.title).toEqual("SampleTitle");
+        });
+
+        hb.whenGET("/posts").respond([{"title" : "SampleTitle"}]);
+
+        wait(store.list(Post), (List posts) {
+          expect(posts.first.title).toEqual("SampleTitle");
+        });
+      });
+
       it("support custom queries returning one object", (MockHttpBackend hb, ObjectStore store) {
         hb.whenGET("/posts/123").respond({"id": 123, "title" : "SampleTitle"});
 
@@ -220,6 +243,35 @@ testObjectStore() {
           });
 
           hb.expectPUT("/posts/123").respond(500, "BOOM");
+
+          waitForError(store.update(post), (resp) {
+            expect(resp).toEqual("BOOM");
+          });
+        });
+
+        it("supports deserializers that return Futures",
+            (HammockConfig config, MockHttpBackend hb, ObjectStore store) {
+
+          config.set({
+              "posts" : {
+                  "type" : Post,
+                  "serializer" : serializePost,
+                  "deserializer" : {
+                    "command" : {
+                      "success" : (r) => new Future.value(deserializePost(r)),
+                      "error" : (p,r) => new Future.value(parseErrors(p,r))
+                    }
+                  }
+              }
+          });
+
+          hb.expectPUT("/posts/123").respond({"title": "Newer"});
+
+          wait(store.update(post), (Post returnedPost) {
+            expect(returnedPost.title).toEqual("Newer");
+          });
+
+          hb.expectPUT("/posts/123").respond(500, 'BOOM');
 
           waitForError(store.update(post), (resp) {
             expect(resp).toEqual("BOOM");

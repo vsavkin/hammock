@@ -1,3 +1,7 @@
+# v0.2.2
+
+* Add support for async deserializers.
+
 # v0.2.1 (2014-07-03)
 
 * Add support for custom queries and commands.
