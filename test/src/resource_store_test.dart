@@ -43,7 +43,7 @@ testResourceStore() {
         it("returns one resource", (MockHttpBackend hb, ResourceStore store) {
           hb.whenGET("/posts/123").respond({"id": 123, "title" : "SampleTitle"});
 
-          wait(store.customQueryOne("posts", method: "GET", url:"/posts/123"), (resource) {
+          wait(store.customQueryOne("posts", new CustomRequestParams(method: "GET", url:"/posts/123")), (resource) {
             expect(resource.content["title"]).toEqual("SampleTitle");
           });
         });
@@ -51,7 +51,7 @@ testResourceStore() {
         it("returns many resource", (MockHttpBackend hb, ResourceStore store) {
           hb.whenGET("/posts").respond([{"id": 123, "title" : "SampleTitle"}]);
 
-          wait(store.customQueryList("posts", method: "GET", url: "/posts"), (resources) {
+          wait(store.customQueryList("posts", new CustomRequestParams(method: "GET", url: "/posts")), (resources) {
             expect(resources.length).toEqual(1);
             expect(resources[0].content["title"]).toEqual("SampleTitle");
           });
@@ -117,7 +117,7 @@ testResourceStore() {
 
         final post = resource("posts", 123);
 
-        wait(store.customCommand(post, method: 'DELETE', url: '/posts/123'), (resp) {
+        wait(store.customCommand(post, new CustomRequestParams(method: 'DELETE', url: '/posts/123')), (resp) {
           expect(resp.content).toEqual("OK");
         });
       });

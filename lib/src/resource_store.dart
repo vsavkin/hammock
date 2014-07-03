@@ -27,48 +27,12 @@ class ResourceStore {
     return http.get(url, params: params).then(_parseManyResources((resourceType)));
   }
 
-  Future<Resource> customQueryOne(resourceType, {
-    String url,
-    String method,
-    data,
-    Map<String, dynamic> params,
-    Map<String, dynamic> headers,
-    bool withCredentials: false,
-    xsrfHeaderName,
-    xsrfCookieName,
-    interceptors,
-    cache,
-    timeout
-  }){
+  Future<Resource> customQueryOne(resourceType, CustomRequestParams params) =>
+      params.invoke(http).then(_parseResource(resourceType));
 
-    final r = http(method: method, url: url, data: data, params: params, headers: headers,
-      withCredentials: withCredentials, xsrfHeaderName: xsrfHeaderName,
-      xsrfCookieName: xsrfCookieName, interceptors: interceptors, cache: cache,
-      timeout: timeout);
+  Future<List<Resource>> customQueryList(resourceType, CustomRequestParams params)  =>
+      params.invoke(http).then(_parseManyResources(resourceType));
 
-    return r.then(_parseResource(resourceType));
-  }
-
-  Future<List<Resource>> customQueryList(resourceType, {
-    String url,
-    String method,
-    data,
-    Map<String, dynamic> params,
-    Map<String, dynamic> headers,
-    bool withCredentials: false,
-    xsrfHeaderName,
-    xsrfCookieName,
-    interceptors,
-    cache,
-    timeout
-  }){
-    final r = http(method: method, url: url, data: data, params: params, headers: headers,
-      withCredentials: withCredentials, xsrfHeaderName: xsrfHeaderName,
-      xsrfCookieName: xsrfCookieName, interceptors: interceptors, cache: cache,
-      timeout: timeout);
-
-    return r.then(_parseManyResources((resourceType)));
-  }
 
   Future<CommandResponse> create(Resource resource) {
     final content = _docFormat.resourceToDocument(resource);
@@ -90,26 +54,9 @@ class ResourceStore {
     return http.delete(url).then(p, onError: _error(p));
   }
 
-  Future<CommandResponse> customCommand(resource, {
-    String url,
-    String method,
-    data,
-    Map<String, dynamic> params,
-    Map<String, dynamic> headers,
-    bool withCredentials: false,
-    xsrfHeaderName,
-    xsrfCookieName,
-    interceptors,
-    cache,
-    timeout
-  }) {
-    final r = http(method: method, url: url, data: data, params: params, headers: headers,
-      withCredentials: withCredentials, xsrfHeaderName: xsrfHeaderName,
-      xsrfCookieName: xsrfCookieName, interceptors: interceptors, cache: cache,
-      timeout: timeout);
-
+  Future<CommandResponse> customCommand(resource, CustomRequestParams params) {
     final p = _parseCommandResponse(resource);
-    return r.then(p, onError: _error(p));
+    return params.invoke(http).then(p, onError: _error(p));
   }
 
 

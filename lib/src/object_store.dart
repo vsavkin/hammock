@@ -25,98 +25,37 @@ class ObjectStore {
     return resourceStore.list(rt, params: params).then(deserialize);
   }
 
-  Future customQueryOne(type, {
-    String url,
-    String method,
-    data,
-    Map<String, dynamic> params,
-    Map<String, dynamic> headers,
-    bool withCredentials: false,
-    xsrfHeaderName,
-    xsrfCookieName,
-    interceptors,
-    cache,
-    timeout
-  }){
+  Future customQueryOne(type, CustomRequestParams params){
     final rt = config.resourceType(type);
     final deserialize = config.deserializer(rt, ['query']);
-
-    final r = resourceStore.customQueryOne(rt, method: method, url: url, data: data, params: params, headers: headers,
-      withCredentials: withCredentials, xsrfHeaderName: xsrfHeaderName,
-      xsrfCookieName: xsrfCookieName, interceptors: interceptors, cache: cache,
-      timeout: timeout);
-
-    return r.then(deserialize);
+    return resourceStore.customQueryOne(rt, params).then(deserialize);
   }
 
-  Future<List> customQueryList(type, {
-    String url,
-    String method,
-    data,
-    Map<String, dynamic> params,
-    Map<String, dynamic> headers,
-    bool withCredentials: false,
-    xsrfHeaderName,
-    xsrfCookieName,
-    interceptors,
-    cache,
-    timeout
-  }){
+  Future<List> customQueryList(type, CustomRequestParams params){
     final rt = config.resourceType(type);
     final deserialize = (list) => list.map(config.deserializer(rt, ['query'])).toList();
-
-    final r = resourceStore.customQueryList(rt, method: method, url: url, data: data, params: params, headers: headers,
-      withCredentials: withCredentials, xsrfHeaderName: xsrfHeaderName,
-      xsrfCookieName: xsrfCookieName, interceptors: interceptors, cache: cache,
-      timeout: timeout);
-
-    return r.then(deserialize);
+    return resourceStore.customQueryList(rt, params).then(deserialize);
   }
 
-  Future create(object) {
+
+  Future create(object) =>
+      _resourceStoreCommand(object, resourceStore.create);
+
+  Future update(object) =>
+      _resourceStoreCommand(object, resourceStore.update);
+
+  Future delete(object) =>
+      _resourceStoreCommand(object, resourceStore.delete);
+
+  Future customCommand(object, CustomRequestParams params) =>
+      _resourceStoreCommand(object, (res) => resourceStore.customCommand(res, params));
+
+
+  _resourceStoreCommand(object, function) {
     final res = _wrapInResource(object);
     final p = _parseSuccessCommandResponse(res, object);
     final ep = _parseErrorCommandResponse(res, object);
-    return resourceStore.create(res).then(p, onError: ep);
-  }
-
-  Future update(object) {
-    final res = _wrapInResource(object);
-    final p = _parseSuccessCommandResponse(res, object);
-    final ep = _parseErrorCommandResponse(res, object);
-    return resourceStore.update(res).then(p, onError: ep);
-  }
-
-  Future delete(object) {
-    final res = _wrapInResource(object);
-    final p = _parseSuccessCommandResponse(res, object);
-    final ep = _parseErrorCommandResponse(res, object);
-    return resourceStore.delete(res).then(p, onError: ep);
-  }
-
-  Future<CommandResponse> customCommand(object, {
-    String url,
-    String method,
-    data,
-    Map<String, dynamic> params,
-    Map<String, dynamic> headers,
-    bool withCredentials: false,
-    xsrfHeaderName,
-    xsrfCookieName,
-    interceptors,
-    cache,
-    timeout
-  }) {
-    final res = _wrapInResource(object);
-    final p = _parseSuccessCommandResponse(res, object);
-    final ep = _parseErrorCommandResponse(res, object);
-
-    final r = resourceStore.customCommand(res, method: method, url: url, data: data, params: params, headers: headers,
-      withCredentials: withCredentials, xsrfHeaderName: xsrfHeaderName,
-      xsrfCookieName: xsrfCookieName, interceptors: interceptors, cache: cache,
-      timeout: timeout);
-
-    return r.then(p, onError: ep);
+    return function(res).then(p, onError: ep);
   }
 
   _wrapInResource(object) =>
