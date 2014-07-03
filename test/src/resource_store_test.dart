@@ -38,6 +38,25 @@ testResourceStore() {
           expect(resp.data).toBe("BOOM");
         });
       });
+
+      describe("custom queries", () {
+        it("returns one resource", (MockHttpBackend hb, ResourceStore store) {
+          hb.whenGET("/posts/123").respond({"id": 123, "title" : "SampleTitle"});
+
+          wait(store.customQueryOne("posts", method: "GET", url:"/posts/123"), (resource) {
+            expect(resource.content["title"]).toEqual("SampleTitle");
+          });
+        });
+
+        it("returns many resource", (MockHttpBackend hb, ResourceStore store) {
+          hb.whenGET("/posts").respond([{"id": 123, "title" : "SampleTitle"}]);
+
+          wait(store.customQueryList("posts", method: "GET", url: "/posts"), (resources) {
+            expect(resources.length).toEqual(1);
+            expect(resources[0].content["title"]).toEqual("SampleTitle");
+          });
+        });
+      });
     });
 
 
@@ -90,6 +109,16 @@ testResourceStore() {
 
         waitForError(store.delete(post), (resp) {
           expect(resp.content).toEqual("BOOM");
+        });
+      });
+
+      it("supports custom commands", (MockHttpBackend hb, ResourceStore store) {
+        hb.expectDELETE("/posts/123").respond("OK");
+
+        final post = resource("posts", 123);
+
+        wait(store.customCommand(post, method: 'DELETE', url: '/posts/123'), (resp) {
+          expect(resp.content).toEqual("OK");
         });
       });
     });

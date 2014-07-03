@@ -24,10 +24,51 @@ class ResourceStore {
 
   Future<List<Resource>> list(resourceType) {
     final url = _url(resourceType);
-    final parse = (resp) => _docFormat.documentToManyResources(resourceType, resp.data);
-    return http.get(url).then(parse);
+    return http.get(url).then(_parseManyResources((resourceType)));
   }
 
+  Future<Resource> customQueryOne(resourceType, {
+    String url,
+    String method,
+    data,
+    Map<String, dynamic> params,
+    Map<String, dynamic> headers,
+    bool withCredentials: false,
+    xsrfHeaderName,
+    xsrfCookieName,
+    interceptors,
+    cache,
+    timeout
+  }){
+
+    final r = http(method: method, url: url, data: data, params: params, headers: headers,
+      withCredentials: withCredentials, xsrfHeaderName: xsrfHeaderName,
+      xsrfCookieName: xsrfCookieName, interceptors: interceptors, cache: cache,
+      timeout: timeout);
+
+    return r.then(_parseResource(resourceType));
+  }
+
+  Future<List<Resource>> customQueryList(resourceType, {
+    String url,
+    String method,
+    data,
+    Map<String, dynamic> params,
+    Map<String, dynamic> headers,
+    bool withCredentials: false,
+    xsrfHeaderName,
+    xsrfCookieName,
+    interceptors,
+    cache,
+    timeout
+  }){
+    final r = http(method: method, url: url, data: data, params: params, headers: headers,
+      withCredentials: withCredentials, xsrfHeaderName: xsrfHeaderName,
+      xsrfCookieName: xsrfCookieName, interceptors: interceptors, cache: cache,
+      timeout: timeout);
+
+    return r.then(_parseManyResources((resourceType)));
+  }
 
   Future<CommandResponse> create(Resource resource) {
     final content = _docFormat.resourceToDocument(resource);
@@ -49,8 +90,31 @@ class ResourceStore {
     return http.delete(url).then(p, onError: _error(p));
   }
 
+  Future<CommandResponse> customCommand(resource, {
+    String url,
+    String method,
+    data,
+    Map<String, dynamic> params,
+    Map<String, dynamic> headers,
+    bool withCredentials: false,
+    xsrfHeaderName,
+    xsrfCookieName,
+    interceptors,
+    cache,
+    timeout
+  }) {
+    final r = http(method: method, url: url, data: data, params: params, headers: headers,
+      withCredentials: withCredentials, xsrfHeaderName: xsrfHeaderName,
+      xsrfCookieName: xsrfCookieName, interceptors: interceptors, cache: cache,
+      timeout: timeout);
+
+    final p = _parseCommandResponse(resource);
+    return r.then(p, onError: _error(p));
+  }
+
 
   _parseResource(resourceType) => (resp) => _docFormat.documentToResource(resourceType, resp.data);
+  _parseManyResources(resourceType) => (resp) => _docFormat.documentToManyResources(resourceType, resp.data);
   _parseCommandResponse(res) => (resp) => _docFormat.documentToCommandResponse(res, resp.data);
   _error(Function func) => (resp) => new Future.error(func(resp));
 

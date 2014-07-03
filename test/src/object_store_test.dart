@@ -69,6 +69,23 @@ testObjectStore() {
           expect(post.title).toEqual("SampleTitle");
         });
       });
+
+      it("support custom queries returning one object", (MockHttpBackend hb, ObjectStore store) {
+        hb.whenGET("/posts/123").respond({"id": 123, "title" : "SampleTitle"});
+
+        wait(store.customQueryOne(Post, method: "GET", url:"/posts/123"), (Post post) {
+          expect(post.title).toEqual("SampleTitle");
+        });
+      });
+
+      it("support custom queries returning many object", (MockHttpBackend hb, ObjectStore store) {
+        hb.whenGET("/posts").respond([{"id": 123, "title" : "SampleTitle"}]);
+
+        wait(store.customQueryList(Post, method: "GET", url: "/posts"), (List posts) {
+          expect(posts.length).toEqual(1);
+          expect(posts[0].title).toEqual("SampleTitle");
+        });
+      });
     });
 
 
@@ -126,6 +143,16 @@ testObjectStore() {
           final post = new Post()..title = "New";
 
           waitForError(store.create(post));
+        });
+
+        it("supports custom commands", (MockHttpBackend hb, ObjectStore store) {
+          hb.expectDELETE("/posts/123").respond("OK");
+
+          final post = new Post()..id = 123;
+
+          wait(store.customCommand(post, method: 'DELETE', url: '/posts/123'), (resp) {
+            expect(resp.content).toEqual("OK");
+          });
         });
       });
 
