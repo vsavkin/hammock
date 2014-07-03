@@ -396,6 +396,13 @@ store.update(post).catchError((errs) {
 });
 ```
 
+#### Async Deserializers
+
+Hammock support async deserializers, which is useful if you want to fetch some extra information while deserializing an object.
+Just return a Future, and the rest will be taken care of by the library.
+
+
+
 #### Custom Queries and Commands
 
 Similar to `ResourceStore` `ObjectStore` supports custom queries and commands.
