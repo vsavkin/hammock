@@ -49,7 +49,7 @@ Post deserializePost(Resource r) => new Post()
 
 Resource serializePost(Post post) =>
     resource("posts", post.id, {"id" : post.id, "title" : post.title});
-
+```
 
 You don't have to define all these functions by hand. Any framework converting maps into objects and visa versa can be used here.
 
