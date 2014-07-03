@@ -22,9 +22,9 @@ class ResourceStore {
     return http.get(url).then(_parseResource(resourceType));
   }
 
-  Future<List<Resource>> list(resourceType) {
+  Future<List<Resource>> list(resourceType, {Map params}) {
     final url = _url(resourceType);
-    return http.get(url).then(_parseManyResources((resourceType)));
+    return http.get(url, params: params).then(_parseManyResources((resourceType)));
   }
 
   Future<Resource> customQueryOne(resourceType, {

@@ -19,10 +19,10 @@ class ObjectStore {
     return resourceStore.one(rt, id).then(deserialize);
   }
 
-  Future<List> list(type) {
+  Future<List> list(type, {Map params}) {
     final rt = config.resourceType(type);
     final deserialize = (list) => list.map(config.deserializer(rt, ['query'])).toList();
-    return resourceStore.list(rt).then(deserialize);
+    return resourceStore.list(rt, params: params).then(deserialize);
   }
 
   Future customQueryOne(type, {
