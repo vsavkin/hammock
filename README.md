@@ -417,7 +417,7 @@ config.set({
     }
 });
 
-@Injected()
+@Injectable()
 class PostSerializer {}
 ```
 
