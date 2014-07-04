@@ -7,6 +7,8 @@ class IntegrationPost {
 }
 
 testIntegration() {
+  setUpAngular();
+
   deserializePost(r) => new IntegrationPost()
     ..id = r.id
     ..title = r.content["title"]

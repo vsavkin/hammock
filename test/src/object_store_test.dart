@@ -2,6 +2,8 @@ part of hammock_test;
 
 testObjectStore() {
   describe("ObjectStore", () {
+    setUpAngular();
+
     describe("Queries", () {
       beforeEach((HammockConfig config) {
         config.set({
