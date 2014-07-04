@@ -1,0 +1,8 @@
+<div style="margin: 20px;">
+  <div>
+    <input type="text" ng-model="ctrl.site.name">
+    <button ng-click="ctrl.update()">Update Name</button>
+  </div>
+
+  <post ng-repeat="post in ctrl.site.posts" post="post" site="ctrl.site"></post>
+</div>

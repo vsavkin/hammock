@@ -6,7 +6,9 @@ module.exports = function(config) {
     files: [
       'test/hammock_test.dart',
       'packages/guinness/init_specs.dart',
-      {pattern: '**/*.dart', watched: true, included: false, served: true}
+      {pattern: 'lib/**/*.dart', watched: true, included: false, served: true},
+      {pattern: 'test/**/*.dart', watched: true, included: false, served: true},
+      {pattern: 'packages/**/*.dart', watched: true, included: false, served: true}
     ],
 
     autoWatch: true,

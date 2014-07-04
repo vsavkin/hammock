@@ -429,6 +429,10 @@ class PostSerializer {}
 Similar to `ResourceStore` `ObjectStore` supports custom queries and commands.
 
 
+## Demo App
+
+Check out a demo app [here](https://github.com/vsavkin/hammock/tree/master/demo).
+
 
 ## Design Principles
 

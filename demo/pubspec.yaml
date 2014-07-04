@@ -1,0 +1,10 @@
+name: hammock_demo_app
+author: Victor Savkin <vic.savkin@gmail.com>
+homepage: https://github.com/vsavkin/hammock
+dependencies:
+  angular: '>=0.12.0 <1.0.0'
+  http_server: any
+  hammock:
+    path: '../'
+environment:
+  sdk: ">=1.4.0 <2.0.0"
