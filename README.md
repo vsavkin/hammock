@@ -398,8 +398,29 @@ store.update(post).catchError((errs) {
 
 #### Async Deserializers
 
-Hammock support async deserializers, which is useful if you want to fetch some extra information while deserializing an object.
-Just return a Future, and the rest will be taken care of by the library.
+Hammock support deserializers returning `Future`s, which can be useful for a variety of things:
+
+* You can fetch some extra information while deserializing an object.
+* You can implement error handling in your success deserializer. Just return a `Future.error`.
+
+
+#### Injected Serializers and Deserializers
+
+If you pass a type as a serializer or a deserializer, Hammock will use `Injector` to get an instance of that type.
+
+```dart
+config.set({
+    "posts" : {
+      "type" : Post,
+      "serializer" : PostSerializer
+      }
+    }
+});
+
+@Injected()
+class PostSerializer {}
+```
+
 
 
 
