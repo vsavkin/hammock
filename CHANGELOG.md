@@ -1,6 +1,7 @@
-# v0.2.2
+# v0.2.2 (2014-07-04)
 
 * Add support for async deserializers.
+* Add support for injectable serializers and deserializers.
 
 # v0.2.1 (2014-07-03)
 

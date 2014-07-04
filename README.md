@@ -404,7 +404,7 @@ Hammock support deserializers returning `Future`s, which can be useful for a var
 * You can implement error handling in your success deserializer. Just return a `Future.error`.
 
 
-#### Injected Serializers and Deserializers
+#### Injectable Serializers and Deserializers
 
 If you pass a type as a serializer or a deserializer, Hammock will use `Injector` to get an instance of that type.
 
