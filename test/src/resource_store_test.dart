@@ -2,6 +2,8 @@ part of hammock_test;
 
 testResourceStore() {
   describe("ResourceStore", () {
+    setUpAngular();
+
     describe("Queries", () {
       it("returns a resource", (MockHttpBackend hb, ResourceStore store) {
         hb.whenGET("/posts/123").respond({"id": 123, "title" : "SampleTitle"});

@@ -12,6 +12,8 @@ class HammockConfig {
   DocumentFormat documentFormat = new SimpleDocumentFormat();
   dynamic urlRewriter = new HammockUrlRewriter();
 
+  Injector injector;
+  HammockConfig(this.injector);
 
   void set(Map config){
     this.config = config;
@@ -20,11 +22,11 @@ class HammockConfig {
   String route(resourceType) =>
       _value([resourceType, 'route'], () => resourceType);
 
-  deserializer(resourceType, [List path]) =>
-      _value([resourceType, 'deserializer']..addAll(path));
+  deserializer(resourceType, [List path=const[]]) =>
+      _loadCurrent(_value([resourceType, 'deserializer']..addAll(path)));
 
   serializer(resourceType) =>
-      _value([resourceType, 'serializer'], () => throw "No serializer for `${resourceType}`");
+      _loadCurrent(_value([resourceType, 'serializer'], () => throw "No serializer for `${resourceType}`"));
 
   resourceType(objectType) =>
       config.keys.firstWhere(
@@ -49,6 +51,9 @@ class HammockConfig {
 
   _defaultUpdater(resourceType) =>
       (object, resource) => deserializer(resourceType)(resource);
+
+  _loadCurrent(current) =>
+      (current is Type) ? injector.get(current) : current;
 }
 
 _null() => null;
