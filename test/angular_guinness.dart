@@ -11,10 +11,8 @@ export 'package:hammock/hammock.dart';
 export 'package:angular/angular.dart';
 export 'package:angular/mock/module.dart';
 
-void registerBindings([bindings=const[]]){
-  gns.beforeEach(module((Module m){
-    bindings.forEach(m.bind);
-  }));
+void registerBindings([bindings=const[]]) {
+  gns.beforeEach(module((Module m) => bindings.forEach(m.bind)));
 }
 
 void beforeEach(Function fn) {
@@ -37,12 +35,9 @@ void xit(String name, Function fn) {
   gns.xit(name, _injectify(fn));
 }
 
-setUpAngular([bindings=const[]]) {
+setUpAngular() {
   gns.beforeEach(setUpInjector);
   gns.afterEach(tearDownInjector);
-  gns.beforeEach(module((Module m){
-    m.install(new Hammock());
-    bindings.forEach(m.bind);
-  }));
+  gns.beforeEach(module((Module m) => m.install(new Hammock())));
 }
 _injectify(Function fn) => async(inject(fn));

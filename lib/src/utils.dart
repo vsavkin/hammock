@@ -15,7 +15,7 @@ _wrappedIntoErrorFuture(res) {
 
 _wrappedListIntoFuture(List list) {
   if (list.any((v) => v is Future)) {
-    final wrappedInFutures = list.map((v) => new Future.value(v));
+    final wrappedInFutures = list.map((v) => v is Future ? v : new Future.value(v));
     return Future.wait(wrappedInFutures);
   } else {
     return list;

@@ -54,7 +54,7 @@ class ResourceStore {
     return http.delete(url).then(p, onError: _error(p));
   }
 
-  Future<CommandResponse> customCommand(resource, CustomRequestParams params) {
+  Future<CommandResponse> customCommand(Resource resource, CustomRequestParams params) {
     final p = _parseCommandResponse(resource);
     return params.invoke(http).then(p, onError: _error(p));
   }

@@ -16,8 +16,9 @@ You can find the Hammock installation instructions [here](http://pub.dartlang.or
 
 To use Hammock you need to install it:
 
-    module.install(new Hammock());
-
+```dart
+module.install(new Hammock());
+```
 
 Suppose we have this class defined:
 
@@ -28,7 +29,7 @@ class Post {
 }
 ```
 
-We need to configure Hammock to work with this class:
+The only thing we need to do in order to make Hammock work with this class is to provide serialization and deserialization functions. They are responsible for converting domain objects from/into resources.
 
 ```dart
 config.set({
@@ -38,11 +39,7 @@ config.set({
         "serializer" : serializePost
     }
 });
-```
 
-Where the serialization and deserialization functions are responsible for converting domain objects from/into resources.
-
-```dart
 Post deserializePost(Resource r) => new Post()
   ..id = r.id
   ..title = r.content["title"];
@@ -51,7 +48,7 @@ Resource serializePost(Post post) =>
     resource("posts", post.id, {"id" : post.id, "title" : post.title});
 ```
 
-You don't have to define all these functions by hand. Any framework converting maps into objects and visa versa can be used here.
+You don't have to define all these functions by hand. Any framework converting json into objects and visa versa can be used here.
 
 Now, having this configuration we can start loading and saving plain old Dart objects.
 
@@ -84,7 +81,9 @@ store.update(post); // PUT '/posts/456'
 
 To use Hammock you need to install it:
 
-    module.install(new Hammock());
+```dart
+module.install(new Hammock());
+```
 
 After that the following services will become injectable:
 
@@ -93,9 +92,10 @@ After that the following services will become injectable:
 * `HammockConfig`
 
 
+### Resources
 
+Though most of the time you are going to work with `ObjectStore`, sometimes it is valuable to go lower-level and work with resources directly.
 
-### Using Resource
 
 You can create a resource like this:
 
@@ -118,6 +118,7 @@ The `list` method, which takes a resource type, loads all the resources of the g
 
 ```dart
 Future<List<Resource>> rs = store.list("posts"); // GET "/posts"
+Future<List<Resource>> rs = store.list("posts", params: {"createdAfter": '2014'}); // GET "/posts?createdAfter=2014"
 ```
 
 The `scope` method, which takes a resource, allows fetching nested resources.
@@ -134,7 +135,7 @@ Future<List<Resource>> rs = store.scope(post).list("comments"); // GET "/posts/1
 ResourceStore scopeStore = store.scope(post);
 ```
 
-You can scope multiple times:
+You can scope an already scoped store:
 
 ```dart
 store.scope(blog).scope(post);
@@ -221,11 +222,11 @@ store.one("posts", 123); // GET "/posts/123.custom"
 
 #### DocumentFormat
 
-`DocumentFormat` defines how resources are serialized into documents. SimpleDocumentFormat is used by default. It can be overwritten as follows:
+`DocumentFormat` defines how resources are serialized into documents. `SimpleDocumentFormat` is used by default. It can be overwritten as follows:
 
     config.documentFormat = new CustomDocumentFormat();
 
-Please, see `integration_test.dart` for more details.
+Please see `integration_test.dart` for more details.
 
 
 #### Configuring the Http Service
@@ -303,6 +304,7 @@ Now, having this configuration we can start loading and saving plain old Dart ob
 ```dart
 Future<Post> p = store.one(Post, 123);
 Future<List<Post>> ps = store.list(Post);
+Future<List<Post>> ps = store.list(Post, params: {"createdAfter": "2014"});
 Future<Comment> c = store.scope(post).one(Comment, 123);
 Future<List<Comment>> cs = store.scope(post).list(Comment);
 ```

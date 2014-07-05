@@ -10,7 +10,7 @@ testConfig() {
       expect(c.route("type")).toEqual("aaa");
     });
 
-    it("defaults route to the resource type", (HammockConfig c) {
+    it("defaults the route to the given resource type", (HammockConfig c) {
       expect(c.route("type")).toEqual("type");
     });
 
@@ -30,7 +30,7 @@ testConfig() {
       expect(c.deserializer("type", [])).toEqual("deserializer");
     });
 
-    it("returns a deserializer for a resource type (query)", (HammockConfig c) {
+    it("returns a deserializer for a resource type (nested)", (HammockConfig c) {
       c.set({"type" : {"deserializer" : {"query" : "deserializer"}}});
 
       expect(c.deserializer("type", ['query'])).toEqual("deserializer");
@@ -50,10 +50,10 @@ testConfig() {
       expect(() => c.resourceType("someType")).toThrowWith(message: "No resource type found");
     });
 
-    describe("when given tyeps", () {
+    describe("when given types", () {
       registerBindings([_TestInjectable]);
 
-      it("uses Injector to load serializers and deserializers", (HammockConfig c) {
+      it("uses Injector to instantiate serializers and deserializers", (HammockConfig c) {
         c.set({
             "type" : {
                 "serializer" : _TestInjectable,
