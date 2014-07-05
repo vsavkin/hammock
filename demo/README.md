@@ -1,3 +1,6 @@
+# Trying Demo App
+
+1. `cd demo`.
 1. Run `dart server.dart`.
 2. Open `localhost:3001/main.html`.
 3. Open the network tab and check all the requests that have been made.
