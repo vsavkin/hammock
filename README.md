@@ -10,451 +10,361 @@ AngularDart service for working with Rest APIs
 
 You can find the Hammock installation instructions [here](http://pub.dartlang.org/packages/hammock#installing).
 
-
-
-## Quick Start Guide
-
-To use Hammock you need to install it:
+After you have installed the dependency, you need to install the Hammock module:
 
 ```dart
 module.install(new Hammock());
 ```
 
-Suppose we have this class defined:
-
-```dart
-class Post {
-  int id;
-  String title;
-}
-```
-
-The only thing we need to do in order to make Hammock work with this class is to provide serialization and deserialization functions. They are responsible for converting domain objects from/into resources.
-
-```dart
-config.set({
-    "posts" : {
-        "type" : Post,
-        "deserializer" : deserializePost,
-        "serializer" : serializePost
-    }
-});
-
-Post deserializePost(Resource r) => new Post()
-  ..id = r.id
-  ..title = r.content["title"];
-
-Resource serializePost(Post post) =>
-    resource("posts", post.id, {"id" : post.id, "title" : post.title});
-```
-
-You don't have to define all these functions by hand. Any framework converting json into objects and visa versa can be used here.
-
-Now, having this configuration we can start loading and saving plain old Dart objects.
-
-```dart
-Future<Post> p = store.one(Post, 123);
-Future<List<Post>> ps = store.list(Post);
-
-final post = new Post()..id=456..title="title";
-store.update(post); // PUT '/posts/456'
-```
-
-
-
-
-
-
-## Detailed Guide
-
-### Main Abstractions
-
-* `Document` is what is sent over the wire, and it can include one or many resources. It is a String.
-* `Resource` is an addressable entity. It has a type, an id, and content. The content field is a Map.
-* `ResourceStore` sends resources over the wire.
-* `ObjectStore` converts objects into resources and sends them over the wire. It is built on top of `ResourceStore`.
-* `HammockConfig` configures some aspects of `ResourceStore` and `ObjectStore`.
-
-
-
-### Using Hammock
-
-To use Hammock you need to install it:
-
-```dart
-module.install(new Hammock());
-```
-
-After that the following services will become injectable:
+This makes the following services injectable:
 
 * `ResourceStore`
 * `ObjectStore`
 * `HammockConfig`
 
 
+
+
+## Overview
+
+![Overview](https://31.media.tumblr.com/34f3f94ac5b23a0c214ee63c129848b9/tumblr_n8atj11xtE1qc0howo2_500.png)
+
+### Objects
+
+`ObjectStore` converts domain objects into resources and sends them over the wire. It uses serialization and deserialization functions to do that. It is built on top of `ResourceStore`.
+
 ### Resources
 
-Though most of the time you are going to work with `ObjectStore`, sometimes it is valuable to go lower-level and work with resources directly.
+`Resource` is an addressable entity that has a type, an id, and content. `Resource` is data, and it is immutable. `ResourceStore` sends resources over the wire.
+
+### Documents
+
+Document is what you send and receive from the server, and it is a String. It can include one or many resources. `DocumentFormat` specifies how to convert resources into documents and visa versa. By default, Hammock uses a very simple json-based document format, but you can provide your own, and it does not even have to be json-based.
 
 
-You can create a resource like this:
-
-    resource("posts", 1, {"title": "some post"});
-
-Resource has a type, an id, and content.
+Though at some point you may have to provision a new document format or deal with resources  directly, most of the time, you will use `ObjectStore`. That's why I will mostly talk about configuring and using `ObjectStore`.
 
 
 
+## Queries and Commands
 
-### Using ResourceStore
+There are two types of operations in Hammock: queries and commands.
 
-The `one` method, which takes a resource type and an id, loads a resource.
-
-```dart
-Future<Resource> r = store.one("posts", 123); // GET "/posts/123"
-```
-
-The `list` method, which takes a resource type, loads all the resources of the given type.
+Queries:
 
 ```dart
-Future<List<Resource>> rs = store.list("posts"); // GET "/posts"
-Future<List<Resource>> rs = store.list("posts", params: {"createdAfter": '2014'}); // GET "/posts?createdAfter=2014"
+Future one(type, id);
+Future<List> list(type, {Map params});
+Future customQueryOne(type, CustomRequestParams params);
+Future<List> customQueryList(type, CustomRequestParams params);
 ```
 
-The `scope` method, which takes a resource, allows fetching nested resources.
+Commands:
 
 ```dart
-final post = resource("posts", 123);
-Future<Resource> r = store.scope(post).one("comments", 456); // GET "/posts/123/comments/456"
-Future<List<Resource>> rs = store.scope(post).list("comments"); // GET "/posts/123/comments"
+Future create(object);
+Future update(object);
+Future delete(object);
+Future customCommand(object, CustomRequestParams params);
 ```
 
-`scope` returns a new store:
+## Queries
 
-```dart
-ResourceStore scopeStore = store.scope(post);
-```
-
-You can scope an already scoped store:
-
-```dart
-store.scope(blog).scope(post);
-```
-
-To create a resource call the `create` method:
-
-```dart
-final post = resource("posts", null, {"title": "New"}); 
-store.create(post); // POST "/posts"
-```
-
-Use `update` to change the existing resource:
-
-```dart
-final post = resource("posts", 123, {"id": 123, "title": "New"}); 
-store.update(post); // PUT "/posts/123"
-```
-
-Use `delete` to delete the existing resource:
-
-```dart
-final post = resource("posts", 123, {"id": 123, "title": "New"}); 
-store.delete(post); // DELETE "/posts/123"
-```
-
-Use `scope` to create, update, and delete nested resources.
-
-All the commands return a `CommandResponse`. For instance:
-
-```dart
-Future<CommandResponse> createdPost = store.create(post);
-```
-
-Use `customQueryOne` and `customQueryList` to make custom queries:
-
-``dart
-Future<Resource> r = store.customQueryOne("posts", new CustomRequestParams(method: "GET", url:"/posts/123"));
-Future<List<Resource>> rs = store.customQueryList("posts", new CustomRequestParams(method: "GET", url:"/posts"));
-``
-
-And `customCommand` to execute custom commands:
-
-``dart
-final post = resource("posts", 123);
-store.customCommand(post, new CustomRequestParams(method: 'DELETE', url: '/posts/123'));
-``
-
-Using custom queries and command is discouraged.
+![Queries](https://31.media.tumblr.com/a5623c9e88a2180358e3eae6e1dc51e1/tumblr_n8atj11xtE1qc0howo1_1280.png)
 
 
-### Configuring ResourceStore
+Hammock supports four types of queries: `one`, `list`, `customQueryOne`, and `customQueryList`.  All of them return either an object or a list of objects. You can think about queries as retrieving objects from a collection.
 
-`HammockConfig` allows you to configure some aspects of `ResourceStore`.
-
-### Setting Up Route
-
-```dart
-config.set({"posts" : {"route" : "custom"}});
-```
-
-`ResourceStore` will use "custom" to build the url when fetching/saving posts. For instance:
-
-```dart
-store.one("posts", 123) // GET "/custom/123"
-```
-
-#### Setting Up UrlRewriter
-
-```dart
-config.urlRewriter.baseUrl = "/base";
-config.urlRewriter.suffix = ".json";
-
-store.one("posts", 123); // GET "/base/posts/123.json"
-```
-
-Or even like this:
-
-```dart
-config.urlRewriter = (url) => "$url.custom";
-
-store.one("posts", 123); // GET "/posts/123.custom"
-```
-
-#### DocumentFormat
-
-`DocumentFormat` defines how resources are serialized into documents. `SimpleDocumentFormat` is used by default. It can be overwritten as follows:
-
-    config.documentFormat = new CustomDocumentFormat();
-
-Please see `integration_test.dart` for more details.
-
-
-#### Configuring the Http Service
-
-Hammock is built on top of the `Http` service provided by Angular. Consequently, you can configure Hammock by configuring `Http`.
-
-```dart
-final headers = injector.get(HttpDefaultHeaders);
-headers.setHeaders({'Content-Type' : 'custom-type'}, 'GET');
-```
-
-### Using ObjectStore
-
-`ObjectStore` is responsible for:
-
-* Converting object into resources
-* Converting resources into objects
-* Updating objects
-* Using `ResourceStore` to send objects to the server
-
-Suppose we have these classed defined:
+Let's say we have the following model defined:
 
 ```dart
 class Post {
   int id;
   String title;
-  dynamic errors;
-}
-
-class Comment {
-  int id;
-  String text;
+  Post(this.id, this.title);
 }
 ```
 
-We want to be able to work with `Post`s and `Comment`s, not with `Map`s.  To do that we need to configure our store:
+And we want to use Hammock to fetch some posts from the backend. The first thing we need to do is provide this configuration:
 
 ```dart
 config.set({
-    "posts" : {
-        "type" : Post,
-        "deserializer" : deserializePost,
-        "serializer" : serializePost
-    },
-    "comments" : {
-        "type": Comment,
-        "deserializer" : deserializeComment,
-        "serializer" : serializeComment
-    }
+	"posts" : {
+		"type" : Post,
+		"deserializer": {"query" : deserializePost}
+  }
+})
+```
+
+Where `deserializePost` is defined as follows:
+
+```dart
+deserializePost(Resource r) => new Post(r.id, r.content["title"]);
+```
+
+This configuration tells Hammock that we have the resource type "posts", which is mapped to the class `Post`, and when querying we should use `deserializePost` to convert resources into `Post` objects. Pretty straightforward.
+
+Let's try some queries:
+
+```dart
+Future<Post> p = store.one(Post, 123); 	   // GET /posts/123
+Future<List<Post>> ps = store.list(Post);  // GET /posts
+Future<List<Post>> ps = store.list(Post, params: {"createdAfter": "2014"}); // GET /posts?createdAfter=2014
+```
+
+
+
+## Commands
+
+![Commands](https://31.media.tumblr.com/e7c5c9af9804eae0ec3af8ff72d3f93a/tumblr_n8atj11xtE1qc0howo3_1280.png)
+
+Hammock has four types of commands: `create`, `update`, `delete`, and `customCommand`.
+
+Let's start with something very simple - deleting a post.
+
+Having the following configuration:
+
+```dart
+config.set({
+	"posts" : {
+		"type" : Post
+   }
 });
 ```
 
-Where the serialization and deserialization functions are responsible for converting domain objects from/into resources.
+we can delete a post:
+
+		Future c = store.delete(post); // DELETE /posts/123
+
+### Defining Serializers
+
+Now, something a bit more complicated. Let's create a new post.
+
+		store.create(new Post(null, "some title")); // POST /posts
+
+If we execute this command, we will see the following error message: `No serializer for posts`. This makes sense if you think about it. The creation of a new resource involves submitting a document with that resource.
+
+To fix this problem we need to define a serializer.
 
 ```dart
-Post deserializePost(Resource r) => new Post()
-  ..id = r.id
-  ..title = r.content["title"];
+config.set({
+	"posts" : {
+		"type" : Post,
+		"serializer" : serializePost
+  }
+});
 
 Resource serializePost(Post post) =>
-    resource("posts", post.id, {"id" : post.id, "title" : post.title});
-
-Comment deserializeComment(Resource r) => new Comment()
-  ..id = r.id
-  ..text = r.content["text"];
-
-Resource serializeComment(Comment comment) =>
-    resource("comments", comment.id, {"id" : comment.id, "text" : comment.text});
+	  resource("posts", post.id, {"id" : post.id, "title" : post.title});
 ```
 
-You don't have to define all these functions by hand. Any framework converting maps into objects and visa versa can be used here.
+The error message is gone, and the resource has been successfully created. There is an issue however; we do not know the id of the created post.
 
-Now, having this configuration we can start loading and saving plain old Dart objects.
+To fix it we need to look at the response that we got after submitting our post. Let's say it looked something like this:
 
 ```dart
-Future<Post> p = store.one(Post, 123);
-Future<List<Post>> ps = store.list(Post);
-Future<List<Post>> ps = store.list(Post, params: {"createdAfter": "2014"});
-Future<Comment> c = store.scope(post).one(Comment, 123);
-Future<List<Comment>> cs = store.scope(post).list(Comment);
+{"id" : 8989, "title" : "some title"}
 ```
 
-As you can see it is very similar to `ResourceStore`, but we can use our domain objects instead of `Resource`.
+### Defining Deserializers
 
-With the current configuration `create`, `update`, `delete` return a new object. For example:
-
-```dart
-final post = new Post()..id=123..title="title";
-Future<Post> p = store.update(post); // PUT '/posts/123'
-```
-
-Let's say the backend returns the updated post object, for instance, serialized like this `{"id":123,"title":"New"}`.
-
-```dart
-final post = new Post()..id=123..title="title";
-store.update(post).then((updatedPost) {
-  expect(updatedPost.title).toEqual("New");
-  expect(post.title).toEqual("title");
-});
-```
-
-`post` was not updated, and instead a new post object was created. This is great cause it allows you to keep you objects immutable. Sometimes, however, we would like to treat our objects as entities and update them instead. To do that, we need configure our store differently:
+How do we use this response to update our `Post` object? We need to define a special deserializer.
 
 ```dart
 config.set({
-    "posts" : {
-      "type" : Post,
-      "serializer" : serializePost,
-      "deserializer" : {
-        "query" : deserializePost,
-        "command" : updatePost
-      }
-    }
+	"posts" : {
+		"type" : Post,
+		"serializer" : serializePost,
+		"deserializer" : {"command" : updatePost}
+  }
 });
-```
 
-Where `updatePost`:
-
-```dart
-updatePost(Post post, CommandResponse r) {
-  post.title = r.content["title"];
+Post updatePost(Post post, CommandResponse resp) {
+  post.id = resp.content["id"];
   return post;
 }
 ```
 
-In this case:
+As you have probably noticed, command deserializers are slightly different from query deserializers. Whereas query deserializers always create a new object, command deserializers are more generic, and can, for instance, update an existing object.
+
+Having all this in place, we have finally gotten the behaviour we wanted:
 
 ```dart
-final post = new Post()..id=123..title="title";
-store.update(post).then((updatedPost) {
-  expect(updatedPost.title).toEqual("New");
-  expect(post.title).toEqual("New");
-  expect(post).toBe(updatedPost);
+final post = new Post(null, "some title");
+store.create(post).then((_) {
+  //post.id == 8989; when the callback is called, the id field has been already set.
 });
 ```
 
-Finally, let's configure our store to handle errors differently:
+### FP
+
+If you are a fan of functional programming, you do not want to have all these side effects in your deserializer. Instead, you want to create a new `Post` object with the id field set. Hammock supports this use case:
+
+```dart
+Post updatePost(Post post, CommandResponse resp) =>
+    new Post(resp.content["id"], resp.content["title"]);
+```
+
+And since it is so common, you can use query deserializes as command deserializers.
 
 ```dart
 config.set({
-    "posts" : {
-      "type" : Post,
-      "serializer" : serializePost,
-      "deserializer" : {
-        "query" : deserializePost,
-        "command" : {
-          "success" : updatePost,
-          "error" : parseErrors
-        }
-      }
-    }
+  "posts" : {
+  	"type" : Post,
+  	"serializer" : serializePost,
+  	"deserializer" : {"command" : deserializePost}
+  }
 });
+
+deserializePost(Resource r) => new Post(r.id, r.content["title"]);
 ```
 
-Where `parseErrors`:
+### Error Handling
+
+Let's say we are trying to save a post with a blank title.
 
 ```dart
-parseErrors(Post post, CommandResponse r) {
-  return r.content["errors"];
+store.create(new Post(null, ""));
+```
+
+This server does not like it and responds with an error.
+
+```dart
+{"errors" : {"title" : ["cannot be blank"]}}
+```
+
+How can we handle this error?
+
+The first approach is to modify `updatePost`, as follows:
+
+```dart
+Post updatePost(Post post, CommandResponse resp) {
+  if (resp.content["errors"] != null) throw resp.content["errors"];
+  return new Post(resp.content["id"], resp.content["title"]);
 }
 ```
 
-Now, if the backend returns `{"errors" : ["Some Error"]}`.
+After that:
 
 ```dart
-final post = new Post()..id=123..title="title";
-store.update(post).catchError((errs) {
-  expect(errs).toEqual(["Some Error"]);
-});
+store.create(new Post(null, "")).catchError((errors) => showErrors(errors));
 ```
 
-#### Async Deserializers
-
-Hammock support deserializers returning `Future`s, which can be useful for a variety of things:
-
-* You can fetch some extra information while deserializing an object.
-* You can implement error handling in your success deserializer. Just return a `Future.error`.
-
-
-#### Injectable Serializers and Deserializers
-
-If you pass a type as a serializer or a deserializer, Hammock will use `Injector` to get an instance of that type.
+The downside is that we have to do this check in all your deserializers. This is not DRY. What we can do instead is to define a special deserializer for errors.
 
 ```dart
+parseErrors(obj, CommandResponse resp) => resp.content["errors"];
+
 config.set({
-    "posts" : {
-      "type" : Post,
-      "serializer" : PostSerializer
-      }
-    }
+	"posts" : {
+		"type" : Post,
+		"serializer" : serializePost,
+		"deserializer" :
+		  {"command" : {
+	        "success" : deserializePost,
+	        "error" : parseErrors}
+	  }
+  }
 });
-
-@Injectable()
-class PostSerializer {}
 ```
 
+It achieves the same affect but keeps error handling separate.
 
-
-
-#### Custom Queries and Commands
-
-Similar to `ResourceStore` `ObjectStore` supports custom queries and commands.
-
-
-## Demo App
-
-Check out a demo app [here](https://github.com/vsavkin/hammock/tree/master/demo).
-
-
-## Design Principles
-
-### Plain old Dart objects. No active record.
-
-Angular is different from other client-side frameworks. It lets you use simple framework-agnostic objects for your components, controllers, formatters, etc.
-
-In my opinion making users inherit from some class is against the Angular spirit. This is especially true when talking about domain objects. They should not have to know anything about Angular or the backend. Any object, including a simple `Map`, should be possible to load and save, if you wish so.
-
-This means that:
+Finally, if we choose to store errors on the domain object itself, it is easily configurable.
 
 ```dart
-post.update()
-post.delete()
+class Post {
+  int id;
+  String title;
+  Map errors = {};
+  Post(this.id, this.title);
+}
+parseErrors(obj, CommandResponse resp) {
+  obj.errors = resp.content["errors"];
+  return obj;
+}
 ```
 
-are not allowed.
 
-### Convention over Configuration
 
-Everything should work with the minimum amount of configuration, but, if needed, be extensible. It should be possible to configure how data is serialized, deserialized, etc.
+## Nested Resources
 
+Hammock supports nested resources.
+
+```dart
+class Comment {
+  int id;
+  String text;
+  Comment(this.id, this.text);
+}
+store.scope(post).list(Comment); // GET /posts/123/comments
+store.scope(post).update(comment); // POUT /posts/123/comments/456
+```
+
+
+## Async Deserializers and Handling Associations
+
+Hammock does not have the notion of an association. But since the library is flexible enough, we can implement it ourselves.
+
+Let's add comments to `Post`.
+
+```dart
+class Post {
+  int id;
+  String title;
+  List comments = [];
+  Post(this.id, this.title);
+}
+```
+
+And change our deserializer to fetch all the comments of the given post:
+
+```dart
+class DeserializePost {
+  ObjectStore store;
+  DeserializePost(this.store);
+  call(Resource r) {
+    final post = new Post(r.id, r.content["title"]);
+    return store.scope(post).list(Comment).then((comments) {
+      post.comments = comments;
+      return post;
+    });
+  }
+}
+
+config.set({
+	"posts" : {
+		"type" : Post,
+		"serializer" : serializePost,
+		"deserializer" : DeserializePost
+  },
+	"comments" : {
+		"type" : Comment,
+		"deserializer" : deserializeComment
+  }
+});
+```
+
+There are a few interesting things shown here. First, Hammock supports async deserializers, which, as you can see, is very handy for loading additional resources during deserialization. Second, when given a type, Hammock will use `Injector` to get an instance of that type. This allows us to pass `ObjectStore` into our deserializer.
+
+Now, having all of this defined, we can run:
+
+```dart
+store.one(Post, 123).then((post) {
+  //post.comments are present
+});
+```
+
+
+
+## No Active Record
+
+Angular is different from other client-side frameworks. It lets us use simple framework-agnostic objects for our components, controllers, formatters, etc. Making users inherit from some class is against the Angular spirit. This is especially true when talking about domain objects. They should not have to know anything about Angular or the backend. Any object, including a simple 'Map', should be possible to load and save, if we wish so. That's why Hammock does not use the active record pattern. There library makes NO assumptions about the objects it works with. This is good news for FP and DDD fans.
+
+
+
+
+## Detailed Guide
+
+You can find a more detailed guide to Hammock [here](https://github.com/vsavkin/hammock/blob/master/DETAILED_GUIDE.md).
 
