@@ -27,6 +27,8 @@ This makes the following services injectable:
 
 ## Overview
 
+This is how Hammock works:
+
 ![Overview](https://31.media.tumblr.com/34f3f94ac5b23a0c214ee63c129848b9/tumblr_n8atj11xtE1qc0howo2_500.png)
 
 ### Objects
@@ -39,7 +41,7 @@ This makes the following services injectable:
 
 ### Documents
 
-Document is what you send and receive from the server, and it is a String. It can include one or many resources. `DocumentFormat` specifies how to convert resources into documents and visa versa. By default, Hammock uses a very simple json-based document format, but you can provide your own, and it does not even have to be json-based.
+Document is what you send and receive from the server, and it is a String. It can include one or many resources. `DocumentFormat` specifies how to convert resources into documents and vice versa. By default, Hammock uses a very simple json-based document format, but you can provide your own, and it does not even have to be json-based.
 
 
 Though at some point you may have to provision a new document format or deal with resources  directly, most of the time, you will use `ObjectStore`. That's why I will mostly talk about configuring and using `ObjectStore`.
@@ -205,7 +207,7 @@ Post updatePost(Post post, CommandResponse resp) =>
     new Post(resp.content["id"], resp.content["title"]);
 ```
 
-And since it is so common, you can use query deserializes as command deserializers.
+And since it is so common, you can use query deserializers for this purpose.
 
 ```dart
 config.set({
@@ -323,6 +325,7 @@ And change our deserializer to fetch all the comments of the given post:
 class DeserializePost {
   ObjectStore store;
   DeserializePost(this.store);
+
   call(Resource r) {
     final post = new Post(r.id, r.content["title"]);
     return store.scope(post).list(Comment).then((comments) {
@@ -359,7 +362,7 @@ store.one(Post, 123).then((post) {
 
 ## No Active Record
 
-Angular is different from other client-side frameworks. It lets us use simple framework-agnostic objects for our components, controllers, formatters, etc. Making users inherit from some class is against the Angular spirit. This is especially true when talking about domain objects. They should not have to know anything about Angular or the backend. Any object, including a simple 'Map', should be possible to load and save, if we wish so. That's why Hammock does not use the active record pattern. There library makes NO assumptions about the objects it works with. This is good news for FP and DDD fans.
+Angular is different from other client-side frameworks. It lets us use simple framework-agnostic objects for our components, controllers, formatters, etc. Making users inherit from some class is against the Angular spirit. This is especially true when talking about domain objects. They should not have to know anything about Angular or the backend. Any object, including a simple 'Map', should be possible to load and save, if we wish so. That's why Hammock does not use the active record pattern. The library makes NO assumptions about the objects it works with. This is good news for FP and DDD fans.
 
 
 
