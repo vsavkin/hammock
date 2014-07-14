@@ -4,7 +4,6 @@ import 'dart:io';
 import 'dart:async';
 import 'dart:convert';
 import 'package:http_server/http_server.dart' show VirtualDirectory;
-import 'dart:convert' show UTF8;
 
 final postsReg = new RegExp(r'/api/sites/(\d+)/posts$');
 final siteReg = new RegExp(r'/api/sites/(\d+)$');

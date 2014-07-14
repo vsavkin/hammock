@@ -1,3 +1,7 @@
+# v0.2.3 - Dev
+
+* Extract all the code that can be used both on the client and server into `hammock_core`l
+
 # v0.2.2 (2014-07-04)
 
 * Add support for async deserializers.
