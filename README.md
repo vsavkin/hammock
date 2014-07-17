@@ -23,6 +23,9 @@ This makes the following services injectable:
 * `HammockConfig`
 
 
+## Hammock.Mapper
+
+Check out [Hammock.Mapper](https://github.com/vsavkin/hammock_mapper). It is an easy to use library that uses conventions and a bit of meta information to generate all the necessary Hammock configuration.
 
 
 ## Overview
