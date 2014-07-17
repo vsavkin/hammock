@@ -1,4 +1,4 @@
-# v0.2.3 - Dev
+# v0.2.3 - (2014-07-16)
 
 * Extract all the code that can be used both on the client and server into `hammock_core`l
 
