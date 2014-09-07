@@ -1,6 +1,10 @@
+# v0.2.4 - (2014-09-07)
+
+* Add support for request defaults.
+
 # v0.2.3 - (2014-07-16)
 
-* Extract all the code that can be used both on the client and server into `hammock_core`l
+* Extract all the code that can be used both on the client and server into `hammock_core`.
 
 # v0.2.2 (2014-07-04)
 
