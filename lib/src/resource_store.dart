@@ -19,12 +19,12 @@ class ResourceStore {
 
   Future<Resource> one(resourceType, resourceId) {
     final url = _url(resourceType, resourceId);
-    return http.get(url).then(_parseResource(resourceType));
+    return _invoke("GET", url).then(_parseResource(resourceType));
   }
 
   Future<List<Resource>> list(resourceType, {Map params}) {
     final url = _url(resourceType);
-    return http.get(url, params: params).then(_parseManyResources((resourceType)));
+    return _invoke("GET", url, params: params).then(_parseManyResources((resourceType)));
   }
 
   Future<Resource> customQueryOne(resourceType, CustomRequestParams params) =>
@@ -38,20 +38,20 @@ class ResourceStore {
     final content = _docFormat.resourceToDocument(resource);
     final url = _url(resource.type);
     final p = _parseCommandResponse(resource);
-    return http.post(url, content).then(p, onError: _error(p));
+    return _invoke("POST", url, data: content).then(p, onError: _error(p));
   }
 
   Future<CommandResponse> update(Resource resource) {
     final content = _docFormat.resourceToDocument(resource);
     final url = _url(resource.type, resource.id);
     final p = _parseCommandResponse(resource);
-    return http.put(url, content).then(p, onError: _error(p));
+    return _invoke("PUT", url, data: content).then(p, onError: _error(p));
   }
 
   Future<CommandResponse> delete(Resource resource) {
     final url = _url(resource.type, resource.id);
     final p = _parseCommandResponse(resource);
-    return http.delete(url).then(p, onError: _error(p));
+    return _invoke("DELETE", url).then(p, onError: _error(p));
   }
 
   Future<CommandResponse> customCommand(Resource resource, CustomRequestParams params) {
@@ -59,6 +59,29 @@ class ResourceStore {
     return params.invoke(http).then(p, onError: _error(p));
   }
 
+  _invoke(String method, String url, {String data, Map params}) {
+    final d = config.requestDefaults;
+    return http.call(
+        method: method,
+        url: url,
+        data: data,
+        params: _paramsWithDefaults(params),
+        headers: d.headers,
+        withCredentials: d.withCredentials,
+        xsrfCookieName: d.xsrfCookieName,
+        xsrfHeaderName: d.xsrfHeaderName,
+        interceptors: d.interceptors,
+        cache: d.cache,
+        timeout: d.timeout
+    );
+  }
+
+  _paramsWithDefaults(Map rParams) {
+    if (config.requestDefaults.params == null && rParams == null) return null;
+    final params = config.requestDefaults.params == null ? {} : config.requestDefaults.params;
+    if (rParams != null) rParams.forEach((key, value) => params[key] = value);
+    return params;
+  }
 
   _parseResource(resourceType) => (resp) => _docFormat.documentToResource(resourceType, resp.data);
   _parseManyResources(resourceType) => (resp) => _docFormat.documentToManyResources(resourceType, resp.data);

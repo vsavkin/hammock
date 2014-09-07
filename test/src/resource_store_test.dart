@@ -41,6 +41,26 @@ testResourceStore() {
         });
       });
 
+      describe("default params", () {
+        it("uses request defaults", (MockHttpBackend hb, HammockConfig config,
+            ResourceStore store) {
+          config.requestDefaults.withCredentials = true;
+
+          hb.when("GET", "/posts/123", null, null, true).respond(200, {"id" : 123});
+
+          wait(store.one("posts", 123));
+        });
+
+        it("should merge params", (MockHttpBackend hb, HammockConfig config,
+                                     ResourceStore store) {
+          config.requestDefaults.params = {"defaultParam" : "dvalue"};
+
+          hb.when("GET", "/posts?defaultParam=dvalue&requestParam=rvalue").respond(200, []);
+
+          wait(store.list("posts", params: {"requestParam" : "rvalue"}));
+        });
+      });
+
       describe("custom queries", () {
         it("returns one resource", (MockHttpBackend hb, ResourceStore store) {
           hb.whenGET("/posts/123").respond({"id": 123, "title" : "SampleTitle"});

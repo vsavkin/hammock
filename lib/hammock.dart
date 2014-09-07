@@ -7,6 +7,7 @@ export 'hammock_core.dart';
 
 part 'src/resource_store.dart';
 part 'src/config.dart';
+part 'src/request_defaults.dart';
 part 'src/custom_request_params.dart';
 part 'src/object_store.dart';
 part 'src/utils.dart';
