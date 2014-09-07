@@ -1,5 +1,5 @@
 name: hammock
-version: 0.2.3
+version: 0.2.4
 author: Victor Savkin <vic.savkin@gmail.com>
 homepage: https://github.com/vsavkin/hammock
 description: AngularDart service for working with Rest APIs
