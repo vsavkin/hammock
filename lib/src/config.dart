@@ -10,6 +10,7 @@ class HammockUrlRewriter implements UrlRewriter {
 class HammockConfig {
   Map config = {};
   DocumentFormat documentFormat = new SimpleDocumentFormat();
+  final RequestDefaults requestDefaults = new RequestDefaults();
   dynamic urlRewriter = new HammockUrlRewriter();
 
   final Injector injector;

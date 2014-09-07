@@ -181,7 +181,14 @@ config.urlRewriter = (url) => "$url.custom";
 store.one("posts", 123); // GET "/posts/123.custom"
 ```
 
+### Setting Up Request Defaults
 
+```dart
+config.requestDefaults.params = {"token", "secret"};
+store.one("posts", 123); // GET "/posts/123?token=secret"
+```
+
+Custom queries and commands do not use request defaults.
 
 ### DocumentFormat
 
