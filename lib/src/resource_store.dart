@@ -22,7 +22,7 @@ class ResourceStore {
     return _invoke("GET", url).then(_parseResource(resourceType));
   }
 
-  Future<List<Resource>> list(resourceType, {Map params}) {
+  Future<QueryResult<Resource>> list(resourceType, {Map params}) {
     final url = _url(resourceType);
     return _invoke("GET", url, params: params).then(_parseManyResources((resourceType)));
   }
@@ -30,7 +30,7 @@ class ResourceStore {
   Future<Resource> customQueryOne(resourceType, CustomRequestParams params) =>
       params.invoke(http).then(_parseResource(resourceType));
 
-  Future<List<Resource>> customQueryList(resourceType, CustomRequestParams params)  =>
+  Future<QueryResult<Resource>> customQueryList(resourceType, CustomRequestParams params)  =>
       params.invoke(http).then(_parseManyResources(resourceType));
 
 

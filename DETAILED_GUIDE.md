@@ -47,6 +47,9 @@ Future<List<Resource>> rs = store.list("posts"); // GET "/posts"
 Future<List<Resource>> rs = store.list("posts", params: {"createdAfter": '2014'}); // GET "/posts?createdAfter=2014"
 ```
 
+Actually, the `list` method returns an instance of `QueryResult`. It is a list with an extra property: `meta`, which can be used by the backend to pass extra information to the client (e.g., pagination).
+
+
 
 
 ### Nested Resources

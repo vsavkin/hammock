@@ -100,6 +100,6 @@ class JsonApiOrgFormat extends JsonDocumentFormat {
   Resource jsonToResource(type, json) =>
       resource(type, json[type][0]["id"], json[type][0]);
 
-  List<Resource> jsonToManyResources(type, json) =>
+  QueryResult<Resource> jsonToManyResources(type, json) =>
       json[type].map((r) => resource(type, r["id"], r)).toList();
 }
