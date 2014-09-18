@@ -101,5 +101,5 @@ class JsonApiOrgFormat extends JsonDocumentFormat {
       resource(type, json[type][0]["id"], json[type][0]);
 
   List<Resource> jsonToManyResources(type, json) =>
-      json[type].map((r) => resource(type, r["id"], r));
+      json[type].map((r) => resource(type, r["id"], r)).toList();
 }

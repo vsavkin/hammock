@@ -55,11 +55,11 @@ abstract class JsonDocumentFormat implements DocumentFormat {
 
 class SimpleDocumentFormat extends JsonDocumentFormat {
   resourceToJson(Resource res) =>
-  res.content;
+      res.content;
 
   Resource jsonToResource(type, json) =>
-  resource(type, json["id"], json);
+      resource(type, json["id"], json);
 
   List<Resource> jsonToManyResources(type, json) =>
-  json.map((j) => jsonToResource(type, j)).toList();
+      json.map((j) => jsonToResource(type, j)).toList();
 }
