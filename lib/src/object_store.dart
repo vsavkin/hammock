@@ -16,13 +16,13 @@ class ObjectStore {
   Future one(type, id)  =>
       _resourceQueryOne(type, (rt) => resourceStore.one(rt, id));
 
-  Future<List> list(type, {Map params}) =>
+  Future<QueryResult> list(type, {Map params}) =>
       _resourceQueryList(type, (rt) => resourceStore.list(rt, params: params));
 
   Future customQueryOne(type, CustomRequestParams params) =>
       _resourceQueryOne(type, (rt) => resourceStore.customQueryOne(rt, params));
 
-  Future<List> customQueryList(type, CustomRequestParams params) =>
+  Future<QueryResult> customQueryList(type, CustomRequestParams params) =>
       _resourceQueryList(type, (rt) => resourceStore.customQueryList(rt, params));
 
 
@@ -47,7 +47,7 @@ class ObjectStore {
 
   _resourceQueryList(type, function) {
     final rt = config.resourceType(type);
-    deserialize(list) => _wrappedListIntoFuture(list.map(config.deserializer(rt, ['query'])).toList());
+    deserialize(list) => _wrappedListIntoFuture(list.map(config.deserializer(rt, ['query'])));
     return function(rt).then(deserialize);
   }
 

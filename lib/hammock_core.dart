@@ -1,6 +1,7 @@
 library hammock_core;
 
 import 'dart:convert';
+import 'dart:collection';
 
 class Resource {
   final Object type, id;
@@ -17,17 +18,34 @@ class CommandResponse {
   CommandResponse(this.resource, this.content);
 }
 
+class QueryResult<T> extends Object with ListMixin<T>  {
+  final List<T> list;
+  final Map meta;
+
+  QueryResult(this.list, [this.meta=const {}]);
+
+  T operator[](index) => list[index];
+  int get length => list.length;
+
+  operator[]=(index,value) => throw "Not Implemented";
+  set length(value) => throw "Not Implemented";
+
+  QueryResult map(Function fn) => new QueryResult(list.map(fn).toList(), meta);
+
+  QueryResult toList({ bool growable: true }) => this;
+}
+
 abstract class DocumentFormat {
   String resourceToDocument(Resource res);
   Resource documentToResource(resourceType, document);
-  List<Resource> documentToManyResources(resourceType, document);
+  QueryResult documentToManyResources(resourceType, document);
   CommandResponse documentToCommandResponse(Resource res, document);
 }
 
 abstract class JsonDocumentFormat implements DocumentFormat {
   resourceToJson(Resource resource);
   Resource jsonToResource(resourceType, json);
-  List<Resource> jsonToManyResources(resourceType, json);
+  QueryResult<Resource> jsonToManyResources(resourceType, json);
 
   final _encoder = new JsonEncoder();
   final _decoder = new JsonDecoder();
@@ -38,7 +56,7 @@ abstract class JsonDocumentFormat implements DocumentFormat {
   Resource documentToResource(resourceType, document) =>
       jsonToResource(resourceType, _toJSON(document));
 
-  List<Resource> documentToManyResources(resourceType, document) =>
+  QueryResult<Resource> documentToManyResources(resourceType, document) =>
       jsonToManyResources(resourceType, _toJSON(document));
 
   CommandResponse documentToCommandResponse(Resource res, document) =>
@@ -60,6 +78,6 @@ class SimpleDocumentFormat extends JsonDocumentFormat {
   Resource jsonToResource(type, json) =>
       resource(type, json["id"], json);
 
-  List<Resource> jsonToManyResources(type, json) =>
-      json.map((j) => jsonToResource(type, j)).toList();
+  QueryResult<Resource> jsonToManyResources(type, json) =>
+      new QueryResult(json.map((j) => jsonToResource(type, j)).toList());
 }
