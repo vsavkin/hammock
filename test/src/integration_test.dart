@@ -28,7 +28,7 @@ testIntegration() {
         expect(post.content["title"]).toEqual("title");
       });
 
-      hb.expectPUT("/posts/123", '{"posts":[{"id":123,"title":"new"}]}');
+      hb.whenPUT("/posts/123").respond({"posts":[{"id":123,"title":"new"}]});
       wait(s.update(resource("posts", 123, {"id" : 123, "title" : "new"})));
     });
   });
