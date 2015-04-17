@@ -17,7 +17,7 @@ Though most of the time you are going to work with `ObjectStore`, sometimes it i
 
 You can create a resource like this:
 
-    resource("posts", 1, {"title": "some post"});
+    resource(Post, 1, {"title": "some post"});
 
 Resource has a type, an id, and content.
 
@@ -33,7 +33,7 @@ Resource has a type, an id, and content.
 The `one` method, which takes a resource type and an id, loads a resource.
 
 ```dart
-Future<Resource> r = store.one("posts", 123); // GET "/posts/123"
+Future<Resource> r = store.one(Post, 123); // GET "/posts/123"
 ```
 
 
@@ -43,8 +43,8 @@ Future<Resource> r = store.one("posts", 123); // GET "/posts/123"
 The `list` method, which takes a resource type, loads all the resources of the given type.
 
 ```dart
-Future<List<Resource>> rs = store.list("posts"); // GET "/posts"
-Future<List<Resource>> rs = store.list("posts", params: {"createdAfter": '2014'}); // GET "/posts?createdAfter=2014"
+Future<List<Resource>> rs = store.list(Post); // GET "/posts"
+Future<List<Resource>> rs = store.list(Post, params: {"createdAfter": '2014'}); // GET "/posts?createdAfter=2014"
 ```
 
 Actually, the `list` method returns an instance of `QueryResult`. It is a list with an extra property: `meta`, which can be used by the backend to pass extra information to the client (e.g., pagination).
@@ -57,9 +57,9 @@ Actually, the `list` method returns an instance of `QueryResult`. It is a list w
 The `scope` method, which takes a resource, allows fetching nested resources.
 
 ```dart
-final post = resource("posts", 123);
-Future<Resource> r = store.scope(post).one("comments", 456); // GET "/posts/123/comments/456"
-Future<List<Resource>> rs = store.scope(post).list("comments"); // GET "/posts/123/comments"
+final post = resource(Post, 123);
+Future<Resource> r = store.scope(post).one(Comment, 456); // GET "/posts/123/comments/456"
+Future<List<Resource>> rs = store.scope(post).list(Comment); // GET "/posts/123/comments"
 ```
 
 `scope` returns a new store:
@@ -81,7 +81,7 @@ store.scope(blog).scope(post);
 To create a resource call the `create` method:
 
 ```dart
-final post = resource("posts", null, {"title": "New"}); 
+final post = resource(Post, null, {"title": "New"}); 
 store.create(post); // POST "/posts"
 ```
 
@@ -92,7 +92,7 @@ store.create(post); // POST "/posts"
 Use `update` to change the existing resource:
 
 ```dart
-final post = resource("posts", 123, {"id": 123, "title": "New"}); 
+final post = resource(Post, 123, {"id": 123, "title": "New"}); 
 store.update(post); // PUT "/posts/123"
 ```
 
@@ -103,7 +103,7 @@ store.update(post); // PUT "/posts/123"
 Use `delete` to delete the existing resource:
 
 ```dart
-final post = resource("posts", 123, {"id": 123, "title": "New"}); 
+final post = resource(Post, 123, {"id": 123, "title": "New"}); 
 store.delete(post); // DELETE "/posts/123"
 ```
 
@@ -162,7 +162,7 @@ config.set({"posts" : {"route" : "custom"}});
 `ResourceStore` will use "custom" to build the url when fetching/saving posts. For instance:
 
 ```dart
-store.one("posts", 123) // GET "/custom/123"
+store.one(Post, 123) // GET "/custom/123"
 ```
 
 
@@ -173,7 +173,7 @@ store.one("posts", 123) // GET "/custom/123"
 config.urlRewriter.baseUrl = "/base";
 config.urlRewriter.suffix = ".json";
 
-store.one("posts", 123); // GET "/base/posts/123.json"
+store.one(Post, 123); // GET "/base/posts/123.json"
 ```
 
 Or even like this:
@@ -181,14 +181,14 @@ Or even like this:
 ```dart
 config.urlRewriter = (url) => "$url.custom";
 
-store.one("posts", 123); // GET "/posts/123.custom"
+store.one(Post, 123); // GET "/posts/123.custom"
 ```
 
 ### Setting Up Request Defaults
 
 ```dart
 config.requestDefaults.params = {"token", "secret"};
-store.one("posts", 123); // GET "/posts/123?token=secret"
+store.one(Post, 123); // GET "/posts/123?token=secret"
 ```
 
 Custom queries and commands do not use request defaults.
@@ -210,7 +210,7 @@ Hammock is built on top of the `Http` service provided by Angular. Consequently,
 
 ```dart
 final headers = injector.get(HttpDefaultHeaders);
-headers.setHeaders({'Content-Type' : 'custom-type'}, 'GET');
+headers['GET'].addAll({'Content-Type' : 'custom-type'});
 ```
 
 
@@ -264,9 +264,9 @@ Where the serialization and deserialization functions are responsible for conver
 
 ```dart
 Post deserializePost(Resource r) => new Post(id, r.content["title"));
-Resource serializePost(Post post) => resource("posts", post.id, {"id" : post.id, "title" : post.title});
+Resource serializePost(Post post) => resource(Post, post.id, {"id" : post.id, "title" : post.title});
 Comment deserializeComment(Resource r) => new Comment(id, content["text"]);
-Resource serializeComment(Comment comment) => resource("comments", comment.id, {"id" : comment.id, "text" : comment.text});
+Resource serializeComment(Comment comment) => resource(Comment, comment.id, {"id" : comment.id, "text" : comment.text});
 ```
 
 
