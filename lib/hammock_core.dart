@@ -80,7 +80,7 @@ class SimpleDocumentFormat extends JsonDocumentFormat {
 
   QueryResult<Resource> jsonToManyResources(type, json) {
     if(json is Map){
-      var json = json.values.toList();
+      json = json.values.toList();
     } 
     return new QueryResult(json.map((j) => jsonToResource(type, j)).toList());
   }
