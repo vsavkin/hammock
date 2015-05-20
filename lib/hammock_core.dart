@@ -27,8 +27,8 @@ class QueryResult<T> extends Object with ListMixin<T>  {
   T operator[](index) => list[index];
   int get length => list.length;
 
-  operator[]=(index,value) => throw "Not Implemented";
-  set length(value) => throw "Not Implemented";
+  operator[]=(index,value) => list[index] = value;
+  set length(value) => list.length = value;
 
   QueryResult map(Function fn) => new QueryResult(list.map(fn).toList(), meta);
 
@@ -78,6 +78,10 @@ class SimpleDocumentFormat extends JsonDocumentFormat {
   Resource jsonToResource(type, json) =>
       resource(type, json["id"], json);
 
-  QueryResult<Resource> jsonToManyResources(type, json) =>
-      new QueryResult(json.map((j) => jsonToResource(type, j)).toList());
+  QueryResult<Resource> jsonToManyResources(type, json) {
+    if(json is Map){
+      json = json.values.toList();
+    } 
+    return new QueryResult(json.map((j) => jsonToResource(type, j)).toList());
+  }
 }
